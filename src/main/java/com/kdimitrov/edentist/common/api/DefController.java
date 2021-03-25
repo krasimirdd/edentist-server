@@ -21,22 +21,22 @@ public class DefController {
         this.defService = defService;
     }
 
-    @GetMapping("/def/services")
+    @GetMapping("/api/services")
     @ResponseBody
     public List<ServiceDto> getServices() {
         return defService.findAllServices();
     }
 
-    @GetMapping("/def/doctors")
+    @GetMapping("/api/doctors")
     @ResponseBody
     public List<DoctorDto> getDoctors() {
         return defService.findAllDoctors();
     }
 
-    @GetMapping("/api/user/{userEmail}/role")
+    @GetMapping("/api/user/{userEmail}")
     @ResponseBody
     public String getUserMetadata(@PathVariable(value = "userEmail") String userEmail) {
-        return defService.findById(userEmail).toString();
+        return defService.findById(userEmail);
     }
 
 }

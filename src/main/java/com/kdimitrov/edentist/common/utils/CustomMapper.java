@@ -2,10 +2,11 @@ package com.kdimitrov.edentist.common.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.kdimitrov.edentist.common.models.Appointment;
 import com.kdimitrov.edentist.common.models.Doctor;
+import com.kdimitrov.edentist.common.models.Entity;
 import com.kdimitrov.edentist.common.models.Patient;
 import com.kdimitrov.edentist.common.models.Service;
-import com.kdimitrov.edentist.common.models.Appointment;
 import com.kdimitrov.edentist.common.models.rest.AppointmentRequest;
 
 import java.time.LocalDateTime;
@@ -71,7 +72,8 @@ public class CustomMapper {
 
             // create a JSON object
             ObjectNode response = mapper.createObjectNode();
-            response.put("date", LocalDateTime.ofInstant(ofEpochMilli(nextAvailable.getTimestamp()), ZoneId.systemDefault()).toString());
+            response.put("date", LocalDateTime.ofInstant(ofEpochMilli(nextAvailable.getTimestamp()), ZoneId.systemDefault())
+                    .toString());
 
             // create a child JSON object
             ObjectNode doctorNode = mapper.createObjectNode();
@@ -93,5 +95,49 @@ public class CustomMapper {
             ex.printStackTrace();
             return null;
         }
+    }
+
+    public static <T extends Entity> String toUserDto(T t) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            ObjectNode response = null;
+            if (t instanceof Doctor) {
+                Doctor entity = (Doctor) t;
+                response = toDoctor(entity, mapper);
+            } else if (t instanceof Patient) {
+                Patient entity = (Patient) t;
+                response = toPatient(entity, mapper);
+            }
+            // print json
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    private static ObjectNode toPatient(Patient entity, ObjectMapper mapper) {
+        ObjectNode response = mapper.createObjectNode();
+        response.put("id", entity.getId());
+        response.put("email", entity.getEmail());
+        response.put("name", entity.getName());
+        response.put("phone", entity.getPhone());
+        response.put("blood", entity.getBloodType());
+        response.put("sex", entity.getSex());
+        response.put("role", "patient");
+
+        return response;
+    }
+
+    private static ObjectNode toDoctor(Doctor entity, ObjectMapper mapper) {
+        ObjectNode response = mapper.createObjectNode();
+        response.put("id", entity.getId());
+        response.put("email", entity.getEmail());
+        response.put("name", entity.getName());
+        response.put("phone", entity.getPhone());
+        response.put("role", "doctor");
+
+        return response;
     }
 }

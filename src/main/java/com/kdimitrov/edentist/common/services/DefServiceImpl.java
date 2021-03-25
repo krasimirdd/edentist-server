@@ -1,13 +1,15 @@
 package com.kdimitrov.edentist.common.services;
 
+import com.kdimitrov.edentist.common.exceptions.NotFound;
 import com.kdimitrov.edentist.common.models.Doctor;
+import com.kdimitrov.edentist.common.models.Patient;
 import com.kdimitrov.edentist.common.models.dto.DoctorDto;
 import com.kdimitrov.edentist.common.models.dto.ServiceDto;
 import com.kdimitrov.edentist.common.repository.DoctorsRepository;
 import com.kdimitrov.edentist.common.repository.PatientRepository;
 import com.kdimitrov.edentist.common.repository.ServicesRepository;
+import com.kdimitrov.edentist.common.utils.CustomMapper;
 import com.kdimitrov.edentist.common.utils.ObjectMapperUtils;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,13 +45,18 @@ public class DefServiceImpl implements DefService {
                 .collect(Collectors.toList());
     }
 
-    public JSONObject findById(String userEmail) {
+    public String findById(String userEmail) {
 
         Optional<Doctor> docOpt = doctorsRepository.findByEmail(userEmail);
         if (docOpt.isPresent()) {
-            return new JSONObject("{\"role\":\"doctor\"}");
+            return CustomMapper.toUserDto(docOpt.get());
         }
 
-        return new JSONObject("{\"role\":\"patient\"}");
+        Optional<Patient> patientOpt = patientRepository.findByEmail(userEmail);
+        if (patientOpt.isPresent()) {
+            return CustomMapper.toUserDto(patientOpt.get());
+        }
+
+        throw new NotFound("No such user");
     }
 }
