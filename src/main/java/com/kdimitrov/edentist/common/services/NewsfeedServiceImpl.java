@@ -17,7 +17,7 @@ public class NewsfeedServiceImpl implements NewsfeedService {
     private static final int TIMEOUT = 1500;
     NewsApiClient newsApiClient = new NewsApiClient("7c18617c8c3d4d32bae73e8970677dd8");
     Throwable error;
-    private List<Article> articles = new ArrayList<>();
+    private List<Article> articlesList = new ArrayList<>();
 
     @Override
     public synchronized List<Article> getTop() throws Throwable {
@@ -36,7 +36,7 @@ public class NewsfeedServiceImpl implements NewsfeedService {
             throw error;
         }
 
-        return articles;
+        return articlesList;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class NewsfeedServiceImpl implements NewsfeedService {
             throw error;
         }
 
-        return articles;
+        return articlesList;
     }
 
     private NewsApiClient.ArticlesResponseCallback callback() {
@@ -65,7 +65,7 @@ public class NewsfeedServiceImpl implements NewsfeedService {
             @Override
             public void onSuccess(ArticleResponse response) {
                 for (int i = 0; i < LIMIT; i++) {
-                    articles.add(response.getArticles().get(i));
+                    articlesList.add(response.getArticles().get(i));
                 }
             }
 
