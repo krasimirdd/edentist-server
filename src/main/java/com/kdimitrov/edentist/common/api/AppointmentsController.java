@@ -1,12 +1,16 @@
 package com.kdimitrov.edentist.common.api;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.kdimitrov.edentist.common.exceptions.NotFound;
 import com.kdimitrov.edentist.common.exceptions.OperationUnsuccessful;
 import com.kdimitrov.edentist.common.models.Appointment;
 import com.kdimitrov.edentist.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.common.models.rest.AppointmentRequest;
 import com.kdimitrov.edentist.common.services.AppointmentServiceImpl;
+import com.kdimitrov.edentist.common.services.MessageBroker;
 import javassist.NotFoundException;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,9 +31,11 @@ import java.util.List;
 public class AppointmentsController {
 
     final AppointmentServiceImpl appointmentService;
+    final MessageBroker broker;
 
-    public AppointmentsController(AppointmentServiceImpl appointmentService) {
+    public AppointmentsController(AppointmentServiceImpl appointmentService, MessageBroker broker) {
         this.appointmentService = appointmentService;
+        this.broker = broker;
     }
 
     @GetMapping("/appointments")
@@ -47,7 +53,9 @@ public class AppointmentsController {
             @RequestBody AppointmentRequest request
     ) {
         try {
-            return appointmentService.save(request);
+            ResponseEntity<String> entity = appointmentService.save(request);
+            broker.translate(new JSONObject(entity.getBody()));
+            return entity;
         } catch (NotFoundException e) {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

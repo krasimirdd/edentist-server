@@ -13,6 +13,6 @@ import org.springframework.context.annotation.Import;
 
 @Import(ServerConfigContext.class)
 @ComponentScan(basePackages = {
-        "com.kdimitrov.edentist.common" })
+        "com.kdimitrov.edentist.common"})
 public class ServerContext {
 }

@@ -8,8 +8,12 @@
 
 package com.kdimitrov.edentist.config.context;
 
-import org.springframework.context.annotation.ComponentScan;
+import com.kdimitrov.baseApp.profiles.Tests;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
-@ComponentScan(basePackages = {"com.kdimitrov.edentist.config.context"})
-public class ServerConfigContext {
+@Tests
+@Configuration
+@Import(TestsConfigContext.class)
+public class TestsConfigContextConfiguration {
 }

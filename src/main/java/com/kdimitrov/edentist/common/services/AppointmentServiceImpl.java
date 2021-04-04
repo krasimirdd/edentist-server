@@ -6,7 +6,6 @@ import com.kdimitrov.edentist.common.models.Appointment;
 import com.kdimitrov.edentist.common.models.Doctor;
 import com.kdimitrov.edentist.common.models.Patient;
 import com.kdimitrov.edentist.common.models.Service;
-import org.springframework.http.HttpStatus;
 import com.kdimitrov.edentist.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.common.models.dto.DoctorDto;
 import com.kdimitrov.edentist.common.models.dto.PatientDto;
@@ -20,6 +19,7 @@ import com.kdimitrov.edentist.common.utils.CustomMapper;
 import com.kdimitrov.edentist.common.utils.ObjectMapperUtils;
 import javassist.NotFoundException;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.sql.Timestamp;

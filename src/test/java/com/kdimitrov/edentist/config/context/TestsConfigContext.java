@@ -10,6 +10,6 @@ package com.kdimitrov.edentist.config.context;
 
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(basePackages = {"com.kdimitrov.edentist.config.context"})
-public class ServerConfigContext {
+@ComponentScan(basePackages = { "com.kdimitrov.edentist.config.context" })
+public class TestsConfigContext {
 }

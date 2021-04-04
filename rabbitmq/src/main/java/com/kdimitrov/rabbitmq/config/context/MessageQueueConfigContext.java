@@ -6,10 +6,10 @@
  * prior written permission of Axway Software.
  */
 
-package com.kdimitrov.edentist.config.context;
+package main.java.com.kdimitrov.rabbitmq.config.context;
 
 import org.springframework.context.annotation.ComponentScan;
 
-@ComponentScan(basePackages = {"com.kdimitrov.edentist.config.context"})
-public class ServerConfigContext {
+@ComponentScan(basePackages = { "com.kdimitrov.rabbitmq.config.context" })
+public class MessageQueueConfigContext {
 }

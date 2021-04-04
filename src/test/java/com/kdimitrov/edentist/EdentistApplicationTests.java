@@ -1,9 +1,11 @@
 package com.kdimitrov.edentist;
 
+import com.kdimitrov.baseApp.profiles.Tests;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootTest
+@Tests
+@SpringBootApplication
 class EdentistApplicationTests {
 
     @Test
