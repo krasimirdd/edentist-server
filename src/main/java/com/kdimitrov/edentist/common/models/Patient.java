@@ -22,9 +22,6 @@ public class Patient extends com.kdimitrov.edentist.common.models.Entity {
     @Column
     private String bloodType;
 
-    @Column
-    private String sex;
-
     public Patient() {
     }
 
@@ -66,12 +63,5 @@ public class Patient extends com.kdimitrov.edentist.common.models.Entity {
         this.bloodType = bloodType;
     }
 
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
 }
 

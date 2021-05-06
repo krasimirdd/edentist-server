@@ -1,5 +1,6 @@
 package com.kdimitrov.edentist.common.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.kdimitrov.edentist.common.models.Appointment;
@@ -8,6 +9,9 @@ import com.kdimitrov.edentist.common.models.Entity;
 import com.kdimitrov.edentist.common.models.Patient;
 import com.kdimitrov.edentist.common.models.Service;
 import com.kdimitrov.edentist.common.models.rest.AppointmentRequest;
+import com.kdimitrov.edentist.config.ApplicationConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -28,7 +32,6 @@ public class CustomMapper {
             response.put("prescription", entity.getPrescription());
             response.put("medicalHistory", entity.getMedicalHistory());
             response.put("status", entity.getStatus());
-            response.put("fee", entity.getFee());
 
             // create a child JSON object
             ObjectNode doctor = mapper.createObjectNode();
@@ -97,22 +100,62 @@ public class CustomMapper {
         }
     }
 
-    public static <T extends Entity> String toUserDto(T t) {
+    public static String toAdminDtoString(String superadminEmail) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            ObjectNode response = null;
-            if (t instanceof Doctor) {
-                Doctor entity = (Doctor) t;
-                response = toDoctor(entity, mapper);
-            } else if (t instanceof Patient) {
-                Patient entity = (Patient) t;
-                response = toPatient(entity, mapper);
-            }
+            ObjectNode response = toSuperadmin(superadminEmail, mapper);
             // print json
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
+            return toUserDtoString(response);
 
         } catch (Exception ex) {
             ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public static <T extends Entity> String toUserDtoString(T t) {
+        try {
+            ObjectNode response = getJsonNodes(t);
+            // print json
+            return toUserDtoString(response);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public static <T extends Entity> ObjectNode toUserDtoObject(T t) {
+        try {
+            ObjectNode response = getJsonNodes(t);
+            // print json
+            return response;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    private static <T extends Entity> ObjectNode getJsonNodes(T t) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        if (t instanceof Doctor) {
+            return toDoctor((Doctor) t, mapper);
+        } else if (t instanceof Patient) {
+            return toPatient((Patient) t, mapper);
+        }
+
+        return null;
+    }
+
+    private static String toUserDtoString(ObjectNode node) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // print json
+        try {
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -124,7 +167,6 @@ public class CustomMapper {
         response.put("name", entity.getName());
         response.put("phone", entity.getPhone());
         response.put("blood", entity.getBloodType());
-        response.put("sex", entity.getSex());
         response.put("role", "patient");
 
         return response;
@@ -137,6 +179,14 @@ public class CustomMapper {
         response.put("name", entity.getName());
         response.put("phone", entity.getPhone());
         response.put("role", "doctor");
+
+        return response;
+    }
+
+    private static ObjectNode toSuperadmin(String email, ObjectMapper mapper) {
+        ObjectNode response = mapper.createObjectNode();
+        response.put("email", email);
+        response.put("role", "admin");
 
         return response;
     }

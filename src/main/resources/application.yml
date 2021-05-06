@@ -36,3 +36,5 @@ edentist:
         username: guest
         password: guest
         queue-name: edentist.queue
+    app:
+        superadminEmail: edentist18@gmail.com

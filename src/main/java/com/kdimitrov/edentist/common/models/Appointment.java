@@ -25,12 +25,6 @@ public class Appointment extends com.kdimitrov.edentist.common.models.Entity {
     @Column(name = "medical_history")
     private String medicalHistory;
 
-    @Column(name = "fee")
-    private int fee;
-
-    @Column(name = "img_addr")
-    private String imageAddress;
-
     @JoinColumn(name = "status", referencedColumnName = "name")
     private String status;
 
@@ -65,10 +59,6 @@ public class Appointment extends com.kdimitrov.edentist.common.models.Entity {
         return medicalHistory;
     }
 
-    public int getFee() {
-        return fee;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -99,10 +89,6 @@ public class Appointment extends com.kdimitrov.edentist.common.models.Entity {
 
     public void setMedicalHistory(String medicalHistory) {
         this.medicalHistory = medicalHistory;
-    }
-
-    public void setFee(int fee) {
-        this.fee = fee;
     }
 
     public void setStatus(String status) {

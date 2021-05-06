@@ -55,10 +55,21 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> find(String filter, String userEmail) {
-        return Strings.isEmpty(filter) && Strings.isEmpty(userEmail)
+    public List<AppointmentDto> find(String filter, String userEmail, boolean isAdmin) {
+
+        return (Strings.isEmpty(filter) && Strings.isEmpty(userEmail)) || isAdmin
                ? getAll()
                : getFiltered(filter, userEmail);
+    }
+
+    @Override
+    public AppointmentDto find(String userEmail, String code) throws NotFoundException {
+
+        return getFiltered("", userEmail)
+                .stream()
+                .filter(appointment -> appointment.getVisitCode().equals(code))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("No record for provided code"));
     }
 
     @Override
@@ -77,6 +88,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Optional<Patient> patientOpt = patientRepository.findByEmail(request.getEmail());
         Patient patient = patientOpt.orElseGet(() -> patientRepository.save(new Patient(request)));
+        updatePatientInfo(request, patient);
 
         DoctorDto doctorDto = ObjectMapperUtils.map(doctor, new DoctorDto());
         ServiceDto serviceDto = ObjectMapperUtils.map(service, new ServiceDto());
@@ -88,6 +100,23 @@ public class AppointmentServiceImpl implements AppointmentService {
         );
 
         return new ResponseEntity<>(CustomMapper.toAppointmentResponse(entity), HttpStatus.OK);
+    }
+
+    private void updatePatientInfo(AppointmentRequest request, Patient patient) {
+        boolean shouldUpdate = false;
+
+        if (patient.getPhone() == null || !patient.getPhone().equals(request.getPhone())) {
+            patient.setPhone(request.getPhone());
+            shouldUpdate = true;
+        }
+        if (patient.getName() == null || !patient.getName().equals(request.getName())) {
+            patient.setName(request.getName());
+            shouldUpdate = true;
+        }
+
+        if (shouldUpdate) {
+            patientRepository.saveAndFlush(patient);
+        }
     }
 
     private AppointmentRequest getNextAvailable(AppointmentRequest request) {
@@ -140,8 +169,8 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
 
             persisted.setStatus(request.getStatus());
-            persisted.setFee(request.getFee());
 
+            patientRepository.saveAndFlush(request.getPatient());
             Appointment entity = appointmentsRepository.saveAndFlush(persisted);
             return CustomMapper.toAppointmentResponse(entity);
         }

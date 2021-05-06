@@ -1,7 +1,5 @@
 package com.kdimitrov.edentist.common.api;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.kdimitrov.edentist.common.exceptions.NotFound;
 import com.kdimitrov.edentist.common.exceptions.OperationUnsuccessful;
 import com.kdimitrov.edentist.common.models.Appointment;
@@ -42,9 +40,19 @@ public class AppointmentsController {
     @ResponseBody
     public List<AppointmentDto> get(
             @RequestHeader(value = "Filter", required = false) String filter,
+            @RequestHeader(value = "IsAdmin", required = false) boolean isAdmin,
             @RequestParam(name = "user", required = false) String userEmail
     ) {
-        return appointmentService.find(filter, userEmail);
+        return appointmentService.find(filter, userEmail, isAdmin);
+    }
+
+    @GetMapping("/appointment")
+    @ResponseBody
+    public AppointmentDto get(
+            @RequestParam(name = "user") String userEmail,
+            @RequestHeader(name = "Code") String code
+    ) throws NotFoundException {
+        return appointmentService.find(userEmail, code);
     }
 
     @PostMapping("/appointments")

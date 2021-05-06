@@ -11,7 +11,9 @@ import java.util.List;
 
 public interface AppointmentService {
 
-    List<AppointmentDto> find(String filter, String userEmail);
+    List<AppointmentDto> find(String filter, String userEmail, boolean isAdmin);
+
+    AppointmentDto find(String userEmail, String code) throws NotFoundException;
 
     ResponseEntity<String> save(AppointmentRequest appointment) throws NotFoundException;
 
