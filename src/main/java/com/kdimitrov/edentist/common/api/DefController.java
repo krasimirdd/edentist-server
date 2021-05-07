@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static com.kdimitrov.edentist.common.utils.Routes.API_DOCTORS;
+import static com.kdimitrov.edentist.common.utils.Routes.API_SERVICES;
+import static com.kdimitrov.edentist.common.utils.Routes.API_USER;
+import static com.kdimitrov.edentist.common.utils.Routes.API_USER_WITH_EMAIL;
+import static com.kdimitrov.edentist.common.utils.Routes.USEREMAIL_PARAM;
+
 @RestController
 @CrossOrigin("*")
 public class DefController {
@@ -23,25 +29,25 @@ public class DefController {
         this.defService = defService;
     }
 
-    @GetMapping("/api/services")
+    @GetMapping(API_SERVICES)
     @ResponseBody
     public List<ServiceDto> getServices() {
         return defService.findAllServices();
     }
 
-    @GetMapping("/api/doctors")
+    @GetMapping(API_DOCTORS)
     @ResponseBody
     public List<DoctorDto> getDoctors() {
         return defService.findAllDoctors();
     }
 
-    @GetMapping("/api/user/{userEmail}")
+    @GetMapping(API_USER_WITH_EMAIL)
     @ResponseBody
-    public String getUserMetadata(@PathVariable(value = "userEmail") String userEmail) {
+    public String getUserMetadata(@PathVariable(value = USEREMAIL_PARAM) String userEmail) {
         return defService.findById(userEmail);
     }
 
-    @PostMapping("/api/user")
+    @PostMapping(API_USER)
     public String postUserMetadata(@RequestBody String userEmail) {
         return defService.save(userEmail);
     }

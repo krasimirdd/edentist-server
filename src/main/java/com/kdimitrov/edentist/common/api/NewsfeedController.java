@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static com.kdimitrov.edentist.common.utils.Routes.API_NEWSFEED_ALL;
+import static com.kdimitrov.edentist.common.utils.Routes.API_NEWSFEED_TOP;
+
 @RestController
 @CrossOrigin("*")
 public class NewsfeedController {
@@ -19,7 +22,7 @@ public class NewsfeedController {
         this.newsfeedService = newsfeedService;
     }
 
-    @GetMapping("/api/newsfeed/top")
+    @GetMapping(API_NEWSFEED_TOP)
     @ResponseBody
     public List<Article> getTop() {
         try {
@@ -30,7 +33,7 @@ public class NewsfeedController {
         }
     }
 
-    @GetMapping("/api/newsfeed/all")
+    @GetMapping(API_NEWSFEED_ALL)
     @ResponseBody
     public List<Article> getAll() {
         try {

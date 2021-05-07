@@ -38,3 +38,7 @@ edentist:
         queue-name: edentist.queue
     app:
         superadminEmail: edentist18@gmail.com
+        newsapiclient:
+            token: 7c18617c8c3d4d32bae73e8970677dd8
+            limit: 15
+            timeout: 1500

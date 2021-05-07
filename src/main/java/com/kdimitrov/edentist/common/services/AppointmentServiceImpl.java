@@ -55,16 +55,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentDto> find(String filter, String userEmail, boolean isAdmin) {
-
-        return (Strings.isEmpty(filter) && Strings.isEmpty(userEmail)) || isAdmin
+    public List<AppointmentDto> filterAppointments(String filter, String userEmail) {
+        return Strings.isEmpty(filter) && Strings.isEmpty(userEmail)
                ? getAll()
                : getFiltered(filter, userEmail);
     }
 
     @Override
-    public AppointmentDto find(String userEmail, String code) throws NotFoundException {
-
+    public AppointmentDto findSingleAppointment(String userEmail, String code) throws NotFoundException {
         return getFiltered("", userEmail)
                 .stream()
                 .filter(appointment -> appointment.getVisitCode().equals(code))

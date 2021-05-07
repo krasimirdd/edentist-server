@@ -1,5 +1,6 @@
 package com.kdimitrov.edentist.common.services;
 
+import com.kdimitrov.edentist.config.ApplicationConfig;
 import com.kwabenaberko.newsapilib.NewsApiClient;
 import com.kwabenaberko.newsapilib.models.Article;
 import com.kwabenaberko.newsapilib.models.request.EverythingRequest;
@@ -13,11 +14,17 @@ import java.util.List;
 @Service
 public class NewsfeedServiceImpl implements NewsfeedService {
 
-    private static final int LIMIT = 15;
-    private static final int TIMEOUT = 1500;
-    NewsApiClient newsApiClient = new NewsApiClient("7c18617c8c3d4d32bae73e8970677dd8");
-    Throwable error;
-    private List<Article> articlesList = new ArrayList<>();
+    private final int limit;
+    private final int timeout;
+    private final NewsApiClient newsApiClient;
+    private Throwable error;
+    private final List<Article> articlesList = new ArrayList<>();
+
+    public NewsfeedServiceImpl(ApplicationConfig.NewsApiClientConfig config) {
+        this.newsApiClient = new NewsApiClient(config.getToken());
+        this.timeout = config.getTimeout();
+        this.limit = config.getLimit();
+    }
 
     @Override
     public synchronized List<Article> getTop() throws Throwable {
@@ -31,7 +38,7 @@ public class NewsfeedServiceImpl implements NewsfeedService {
                 callback()
         );
 
-        wait(TIMEOUT);
+        wait(timeout);
         if (error != null) {
             throw error;
         }
@@ -52,7 +59,7 @@ public class NewsfeedServiceImpl implements NewsfeedService {
                 callback()
         );
 
-        wait(TIMEOUT);
+        wait(timeout);
         if (error != null) {
             throw error;
         }
@@ -64,7 +71,7 @@ public class NewsfeedServiceImpl implements NewsfeedService {
         return new NewsApiClient.ArticlesResponseCallback() {
             @Override
             public void onSuccess(ArticleResponse response) {
-                for (int i = 0; i < LIMIT; i++) {
+                for (int i = 0; i < limit; i++) {
                     articlesList.add(response.getArticles().get(i));
                 }
             }

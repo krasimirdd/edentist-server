@@ -51,16 +51,6 @@ public class DefServiceImpl implements DefService {
     }
 
     @Override
-    public Doctor createUser(String email, String name, String password, String phone) {
-        Doctor doctor = new Doctor();
-
-        doctor.setEmail(email);
-        doctor.setName(name);
-        doctor.setPassword(password);
-        doctor.setPhone(phone);
-        return doctorsRepository.saveAndFlush(doctor);
-    }
-
     public String findById(String userEmail) {
         if (config.getSuperadminEmail().equals(userEmail)) {
             return CustomMapper.toAdminDtoString(config.getSuperadminEmail());
@@ -79,6 +69,7 @@ public class DefServiceImpl implements DefService {
         throw new NotFound("No such user");
     }
 
+    @Override
     public String save(String email) {
         Optional<Patient> patientOpt = patientRepository.findByEmail(email);
         if (patientOpt.isPresent()) {
@@ -88,5 +79,16 @@ public class DefServiceImpl implements DefService {
         Patient patient = new Patient();
         patient.setEmail(email);
         return CustomMapper.toUserDtoString(patientRepository.saveAndFlush(patient));
+    }
+
+    @Override
+    public Doctor createUser(String email, String name, String password, String phone) {
+        Doctor doctor = new Doctor();
+
+        doctor.setEmail(email);
+        doctor.setName(name);
+        doctor.setPassword(password);
+        doctor.setPhone(phone);
+        return doctorsRepository.saveAndFlush(doctor);
     }
 }

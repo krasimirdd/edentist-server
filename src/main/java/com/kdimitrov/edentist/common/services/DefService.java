@@ -11,5 +11,9 @@ public interface DefService {
 
     List<DoctorDto> findAllDoctors();
 
-    Doctor createUser(final String email, String name, final String password, final String phone);
+    String findById(String userEmail);
+
+    String save(String email);
+
+    Doctor createUser(String email, String name, String password, String phone);
 }

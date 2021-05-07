@@ -24,6 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static com.kdimitrov.edentist.common.utils.Routes.APPOINTMENTS;
+import static com.kdimitrov.edentist.common.utils.Routes.APPOINTMENTS_WITH_ID;
+import static com.kdimitrov.edentist.common.utils.Routes.CODE_HEADER;
+import static com.kdimitrov.edentist.common.utils.Routes.FILTER_HEADER;
+import static com.kdimitrov.edentist.common.utils.Routes.ID_PARAM;
+import static com.kdimitrov.edentist.common.utils.Routes.SINGLE_APPOINTMENT;
+import static com.kdimitrov.edentist.common.utils.Routes.USER_PARAM;
+
 @RestController
 @CrossOrigin("*")
 public class AppointmentsController {
@@ -36,28 +44,27 @@ public class AppointmentsController {
         this.broker = broker;
     }
 
-    @GetMapping("/appointments")
+    @GetMapping(APPOINTMENTS)
     @ResponseBody
-    public List<AppointmentDto> get(
-            @RequestHeader(value = "Filter", required = false) String filter,
-            @RequestHeader(value = "IsAdmin", required = false) boolean isAdmin,
-            @RequestParam(name = "user", required = false) String userEmail
+    public List<AppointmentDto> getAppointment(
+            @RequestHeader(value = FILTER_HEADER, required = false) String filter,
+            @RequestParam(name = USER_PARAM, required = false) String userEmail
     ) {
-        return appointmentService.find(filter, userEmail, isAdmin);
+        return appointmentService.filterAppointments(filter, userEmail);
     }
 
-    @GetMapping("/appointment")
+    @GetMapping(SINGLE_APPOINTMENT)
     @ResponseBody
-    public AppointmentDto get(
-            @RequestParam(name = "user") String userEmail,
-            @RequestHeader(name = "Code") String code
+    public AppointmentDto getSingleAppointment(
+            @RequestParam(name = USER_PARAM) String userEmail,
+            @RequestHeader(name = CODE_HEADER) String code
     ) throws NotFoundException {
-        return appointmentService.find(userEmail, code);
+        return appointmentService.findSingleAppointment(userEmail, code);
     }
 
-    @PostMapping("/appointments")
+    @PostMapping(APPOINTMENTS)
     @ResponseBody
-    public ResponseEntity addAppointment(
+    public ResponseEntity addAppointments(
             @RequestBody AppointmentRequest request
     ) {
         try {
@@ -70,11 +77,11 @@ public class AppointmentsController {
         }
     }
 
-    @PostMapping("/appointments/{id}")
+    @PostMapping(APPOINTMENTS_WITH_ID)
     @ResponseBody
     public String updateAppointment(
             @RequestBody Appointment request,
-            @PathVariable(value = "id") long id
+            @PathVariable(value = ID_PARAM) long id
     ) {
         try {
             return appointmentService.update(request, id);
@@ -84,9 +91,9 @@ public class AppointmentsController {
         }
     }
 
-    @DeleteMapping("/appointments/{id}")
+    @DeleteMapping(APPOINTMENTS_WITH_ID)
     public ResponseEntity deleteAppointment(
-            @PathVariable(value = "id") long id
+            @PathVariable(value = ID_PARAM) long id
     ) {
         try {
             appointmentService.delete(id);
