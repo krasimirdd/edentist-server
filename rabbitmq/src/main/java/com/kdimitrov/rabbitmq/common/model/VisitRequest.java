@@ -27,9 +27,6 @@ public class VisitRequest implements Serializable {
     @JsonProperty(value = "date")
     private String date;
 
-    @JsonProperty(value = "fee")
-    private int fee;
-
     @JsonProperty(value = "status")
     private String status;
 
@@ -60,10 +57,6 @@ public class VisitRequest implements Serializable {
         return date;
     }
 
-    public int getFee() {
-        return fee;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -88,11 +81,10 @@ public class VisitRequest implements Serializable {
         return service;
     }
 
-    public VisitRequest(long id, String visitCode, String date, int fee, String status, String medicalHistory, String prescription, User doctor, User patient, Service service) {
+    public VisitRequest(long id, String visitCode, String date, String status, String medicalHistory, String prescription, User doctor, User patient, Service service) {
         this.id = id;
         this.visitCode = visitCode;
         this.date = date;
-        this.fee = fee;
         this.status = status;
         this.medicalHistory = medicalHistory;
         this.prescription = prescription;
