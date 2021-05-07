@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class ObjectMapperUtils {
 
-    private static ModelMapper modelMapper = new ModelMapper();
+    private static final ModelMapper modelMapper;
 
     /**
      * Model mapper property setting are specified in the following block.
@@ -87,13 +87,3 @@ public class ObjectMapperUtils {
     }
 
 }
-//public class DtoUtils {
-//
-//    public <From extends Entity, To extends DTOEntity> To convertToDto(From obj, Class<To> mapper) {
-//        return new ModelMapper().map(obj, mapper);
-//    }
-//
-//    public <To extends Entity, From extends DTOEntity> To convertToEntity(From obj, Class<To> mapper) {
-//        return new ModelMapper().map(obj, mapper);
-//    }
-//}
