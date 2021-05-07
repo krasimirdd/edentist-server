@@ -1,0 +1,1 @@
+type Doctor {    email: String!    name: String!    password: String    phone: String!    #    role: Role!}# Roottype Query {    findAllUsers: Boolean!}type Mutation {    createUser( email: String!, name: String!, password: String, phone: String!): Boolean!}

@@ -42,11 +42,23 @@ public class DefServiceImpl implements DefService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<DoctorDto> findAllDoctors() {
         return doctorsRepository.findAll()
                 .stream()
                 .map((e) -> ObjectMapperUtils.map(e, DoctorDto.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Doctor createUser(String email, String name, String password, String phone) {
+        Doctor doctor = new Doctor();
+
+        doctor.setEmail(email);
+        doctor.setName(name);
+        doctor.setPassword(password);
+        doctor.setPhone(phone);
+        return doctorsRepository.saveAndFlush(doctor);
     }
 
     public String findById(String userEmail) {
