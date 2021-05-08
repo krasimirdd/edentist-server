@@ -37,6 +37,7 @@ edentist:
         password: guest
         queue-name: edentist.queue
     app:
+        secret: secret
         superadminEmail: edentist18@gmail.com
         newsapiclient:
             token: 7c18617c8c3d4d32bae73e8970677dd8
