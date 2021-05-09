@@ -1,6 +1,7 @@
 package com.kdimitrov.edentist.app.config;
 
 import com.kdimitrov.edentist.mq.common.service.MailService;
+import com.kdimitrov.edentist.mq.common.service.MailServiceImpl;
 import com.kdimitrov.edentist.mq.common.service.RabbitMQListener;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Binding;
@@ -17,23 +18,25 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-
-import java.util.Properties;
 
 @Configuration
 @ConfigurationProperties(prefix = "edentist.mq")
 public class MQConfig {
 
-    private String queueName;
-
     private String exchange;
-
     private String routingkey;
-
     private String username;
-
     private String password;
+    private String queueName;
+    private String mailSender;
+
+    public String getMailSender() {
+        return mailSender;
+    }
+
+    public void setMailSender(String mailSender) {
+        this.mailSender = mailSender;
+    }
 
     public String getQueueName() {
         return queueName;
@@ -91,12 +94,19 @@ public class MQConfig {
     }
 
     @Bean
-    MessageListenerContainer messageListenerContainer(ConnectionFactory connectionFactory) {
+    MessageListenerContainer messageListenerContainer(ConnectionFactory connectionFactory, JavaMailSender mailSender) {
         SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer();
         simpleMessageListenerContainer.setConnectionFactory(connectionFactory);
         simpleMessageListenerContainer.setQueues(queue());
-        simpleMessageListenerContainer.setMessageListener(new RabbitMQListener(new MailService(mailSender())));
+        simpleMessageListenerContainer.setMessageListener(new RabbitMQListener(mailService(mailSender)));
         return simpleMessageListenerContainer;
+    }
+
+    @Bean
+    MailService mailService(JavaMailSender mailSender) {
+        MailServiceImpl mailService = new MailServiceImpl(mailSender);
+        mailService.setFrom(this.mailSender);
+        return mailService;
     }
 
     @Bean
@@ -111,21 +121,20 @@ public class MQConfig {
         return new Jackson2JsonMessageConverter();
     }
 
-    @Bean
-    public JavaMailSender mailSender() {
-        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.gmail.com");
-        mailSender.setPort(587);
-
-        mailSender.setUsername("edentist18@gmail.com");
-        mailSender.setPassword("fmetudivmccsnihz");
-
-        Properties props = mailSender.getJavaMailProperties();
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.debug", "true");
-
-        return mailSender;
-    }
+//    @Bean
+//    public JavaMailSender mailSender(MailProperties mailProperties) {
+//        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+//
+//        mailSender.setHost(mailProperties.getHost());
+//        mailSender.setPort(mailProperties.getPort());
+//
+//        mailSender.setUsername(mailProperties.getUsername());
+//        mailSender.setPassword(mailProperties.getPassword());
+//
+//        Properties props = mailSender.getJavaMailProperties();
+//        Map<String, String> properties = mailProperties.getProperties();
+//        props.putAll(properties);
+//
+//        return mailSender;
+//    }
 }

@@ -7,13 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-
-import static com.kdimitrov.edentist.server.common.utils.Routes.AUTHORIZATION;
-import static com.kdimitrov.edentist.server.common.utils.Routes.CODE_HEADER;
-import static com.kdimitrov.edentist.server.common.utils.Routes.FILTER_HEADER;
 
 @Configuration
 @ConfigurationProperties(prefix = "edentist.app")

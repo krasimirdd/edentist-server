@@ -10,35 +10,36 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 public class MQTask implements Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MQTask.class);
+    private final Logger logger = LoggerFactory.getLogger(MQTask.class);
+
+    private final MailService mailService;
 
     private final VisitRequest visitRequest;
-    private final MailService mailService;
     private static final String SUBJECT = "Visit Request";
 
-    public MQTask(VisitRequest visitRequest, MailService mailService) {
-        this.visitRequest = visitRequest;
+    public MQTask(MailService mailService, VisitRequest visitRequest) {
         this.mailService = mailService;
+        this.visitRequest = visitRequest;
     }
 
     @Override
     public void run() {
         try {
             mailService.sendEmail(SUBJECT,
-                                  Paths.get("rabbitmq\\src\\main\\resources\\email_doctor.html"),
+                                  Paths.get("src/main/resources/email-templates/email_doctor.html"),
                                   visitRequest.getDoctor().getEmail(),
                                   visitRequest.getVisitCode());
         } catch (IOException | MessagingException e) {
-            LOGGER.error("Error when sending mail to the remedial", e);
+            logger.info("Error when sending mail to the doctor", e);
         }
 
         try {
             mailService.sendEmail(SUBJECT,
-                                  Paths.get("rabbitmq\\src\\main\\resources\\email_patient.html"),
+                                  Paths.get("src/main/resources/email-templates/email_patient.html"),
                                   visitRequest.getPatient().getEmail(),
                                   visitRequest.getVisitCode());
         } catch (IOException | MessagingException e) {
-            LOGGER.error("Error when sending mail to the patient", e);
+            logger.info("Error when sending mail to the patient", e);
         }
     }
 }

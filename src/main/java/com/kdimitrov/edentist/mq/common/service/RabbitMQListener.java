@@ -24,10 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class RabbitMQListener implements MessageListener {
-    private final Logger logger = LoggerFactory.getLogger(MQTask.class);
+    private final Logger logger = LoggerFactory.getLogger(RabbitMQListener.class);
 
     private final MailService mailService;
-
     private final ObjectMapper mapper = new Jackson2ObjectMapperBuilder()
             .modulesToInstall(new JavaTimeModule(),new Jdk8Module()).build()
             .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
@@ -46,11 +45,14 @@ public class RabbitMQListener implements MessageListener {
 
     @RabbitListener(queues = "edentist.queue")
     public void onMessage(final Message message) {
-        logger.debug("Consuming Message - {}", message);
+        logger.info("Consuming Message");
 
         try {
             VisitRequest value = mapper.readValue(message.getBody(), VisitRequest.class);
-            executor.submit(new MQTask(value, mailService));
+            logger.info("=== >> Message body << === \n {}", value);
+
+            executor.submit(new MQTask(mailService, value));
+            logger.info("Task submitted.");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -92,4 +92,18 @@ public class VisitRequest implements Serializable {
     public VisitRequest() {
     }
 
+    @Override
+    public String toString() {
+        return "VisitRequest{" +
+                "id=" + id +
+                ", visitCode='" + visitCode + '\'' +
+                ", date='" + date + '\'' +
+                ", status='" + status + '\'' +
+                ", medicalHistory='" + medicalHistory + '\'' +
+                ", prescription='" + prescription + '\'' +
+                ", doctor=" + doctor +
+                ", patient=" + patient +
+                ", service=" + service +
+                '}';
+    }
 }
