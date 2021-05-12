@@ -1,8 +1,8 @@
 package com.kdimitrov.edentist.server.common.api;
 
+import com.kdimitrov.edentist.server.common.exceptions.NotFound;
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
-import com.kdimitrov.edentist.server.common.services.implementations.AppointmentServiceImpl;
-import javassist.NotFoundException;
+import com.kdimitrov.edentist.server.common.services.implementations.PresentAppointmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,9 +22,9 @@ import static com.kdimitrov.edentist.server.common.utils.Routes.USER_PARAM;
 @CrossOrigin("*")
 public class SingleAppointmentController {
 
-    final AppointmentServiceImpl appointmentService;
+    final PresentAppointmentService appointmentService;
 
-    public SingleAppointmentController(AppointmentServiceImpl appointmentService) {
+    public SingleAppointmentController(PresentAppointmentService appointmentService) {
         this.appointmentService = appointmentService;
     }
 
@@ -36,7 +36,7 @@ public class SingleAppointmentController {
 
         try {
             return new ResponseEntity<>(appointmentService.findSingleAppointment(userEmail, code), HttpStatus.OK);
-        } catch (NotFoundException e) {
+        } catch (NotFound e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

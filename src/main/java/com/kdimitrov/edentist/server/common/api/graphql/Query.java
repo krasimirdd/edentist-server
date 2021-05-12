@@ -1,6 +1,6 @@
 package com.kdimitrov.edentist.server.common.api.graphql;
 
-import com.kdimitrov.edentist.server.common.services.ApiService;
+import com.kdimitrov.edentist.server.common.services.abstractions.ApiService;
 import graphql.kickstart.tools.GraphQLQueryResolver;
 import org.springframework.stereotype.Service;
 

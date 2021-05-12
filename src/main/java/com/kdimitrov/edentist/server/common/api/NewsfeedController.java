@@ -1,6 +1,6 @@
 package com.kdimitrov.edentist.server.common.api;
 
-import com.kdimitrov.edentist.server.common.services.NewsfeedService;
+import com.kdimitrov.edentist.server.common.services.abstractions.NewsfeedService;
 import com.kwabenaberko.newsapilib.models.Article;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

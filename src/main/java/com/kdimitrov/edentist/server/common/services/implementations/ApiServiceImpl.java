@@ -8,7 +8,7 @@ import com.kdimitrov.edentist.server.common.models.dto.ServiceDto;
 import com.kdimitrov.edentist.server.common.repository.DoctorsRepository;
 import com.kdimitrov.edentist.server.common.repository.PatientRepository;
 import com.kdimitrov.edentist.server.common.repository.ServicesRepository;
-import com.kdimitrov.edentist.server.common.services.ApiService;
+import com.kdimitrov.edentist.server.common.services.abstractions.ApiService;
 import com.kdimitrov.edentist.server.common.utils.CustomMapper;
 import com.kdimitrov.edentist.server.common.utils.GraphApiExecutor;
 import com.kdimitrov.edentist.server.common.utils.ObjectMapperUtils;

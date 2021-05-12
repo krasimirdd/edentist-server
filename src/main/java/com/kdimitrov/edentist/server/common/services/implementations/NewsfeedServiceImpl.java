@@ -1,7 +1,7 @@
 package com.kdimitrov.edentist.server.common.services.implementations;
 
 import com.kdimitrov.edentist.app.config.ApplicationConfig;
-import com.kdimitrov.edentist.server.common.services.NewsfeedService;
+import com.kdimitrov.edentist.server.common.services.abstractions.NewsfeedService;
 import com.kwabenaberko.newsapilib.NewsApiClient;
 import com.kwabenaberko.newsapilib.models.Article;
 import com.kwabenaberko.newsapilib.models.request.EverythingRequest;

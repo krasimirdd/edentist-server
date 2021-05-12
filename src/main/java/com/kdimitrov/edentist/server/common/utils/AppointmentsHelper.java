@@ -8,9 +8,9 @@ import com.kdimitrov.edentist.server.common.models.Patient;
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.server.common.models.rest.AppointmentRequest;
 import com.kdimitrov.edentist.server.common.repository.AppointmentsRepository;
-import com.kdimitrov.edentist.server.common.repository.DoctorsRepository;
-import com.kdimitrov.edentist.server.common.repository.PatientRepository;
-import com.kdimitrov.edentist.server.common.repository.ServicesRepository;
+import com.kdimitrov.edentist.server.common.services.implementations.DoctorsService;
+import com.kdimitrov.edentist.server.common.services.implementations.PatientService;
+import com.kdimitrov.edentist.server.common.services.implementations.ServicesService;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.ArrayList;
@@ -22,16 +22,17 @@ import java.util.stream.Collectors;
 
 public class AppointmentsHelper {
 
-    private final DoctorsRepository doctorsRepository;
-    private final PatientRepository patientRepository;
-    private final ServicesRepository serviceRepository;
+    private final DoctorsService doctorsService;
+    private final PatientService patientsService;
+    private final ServicesService servicesService;
 
-    public AppointmentsHelper(DoctorsRepository doctorsRepository,
-                              PatientRepository patientRepository,
-                              ServicesRepository serviceRepository) {
-        this.doctorsRepository = doctorsRepository;
-        this.patientRepository = patientRepository;
-        this.serviceRepository = serviceRepository;
+    public AppointmentsHelper(DoctorsService doctorsService,
+                              PatientService patientsService,
+                              ServicesService servicesService) {
+
+        this.servicesService = servicesService;
+        this.patientsService= patientsService;
+        this.doctorsService = doctorsService;
     }
 
     public static boolean updatePatientInfoIfNeeded(AppointmentRequest request, Patient patient) {
@@ -76,10 +77,10 @@ public class AppointmentsHelper {
     private <T extends AppointmentsRepository<? extends Entity>> List<AppointmentDto> findByUser(String email,
                                                                                                  T repository) throws NotFound {
 
-        Optional<Doctor> doctorOpt = doctorsRepository.findByEmail(email);
+        Optional<Doctor> doctorOpt = doctorsService.findByEmailOpt(email);
         boolean isDoctor = doctorOpt.isPresent();
 
-        Optional<Patient> patientOpt = patientRepository.findByEmail(email);
+        Optional<Patient> patientOpt = patientsService.findByEmailOpt(email);
         boolean isPatient = patientOpt.isPresent();
 
         List appointments = new ArrayList();
@@ -124,12 +125,9 @@ public class AppointmentsHelper {
             throw new NotFound("No record for " + id);
         }
 
-        doctorsRepository.findById(request.getDoctor().getId())
-                .orElseThrow(() -> new NotFound("No record for " + request.getDoctor().getId()));
-        serviceRepository.findById(request.getService().getId())
-                .orElseThrow(() -> new NotFound("No record for " + request.getService().getId()));
-        patientRepository.findByEmail(request.getPatient().getEmail())
-                .orElseThrow(() -> new NotFound("No record for " + request.getPatient().getEmail()));
+        doctorsService.findById(request.getDoctor().getId());
+        servicesService.findById(request.getService().getId());
+        patientsService.findByEmail(request.getPatient().getEmail());
     }
 
 }

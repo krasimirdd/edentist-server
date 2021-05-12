@@ -4,11 +4,11 @@ import com.kdimitrov.edentist.server.common.exceptions.NotFound;
 import com.kdimitrov.edentist.server.common.models.Appointment;
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.server.common.models.rest.AppointmentRequest;
-import com.kdimitrov.edentist.server.common.services.implementations.AppointmentServiceImpl;
+import com.kdimitrov.edentist.server.common.services.implementations.ArchivedAppointmentService;
 import com.kdimitrov.edentist.server.common.services.implementations.AuthenticationServiceImpl;
 import com.kdimitrov.edentist.server.common.services.implementations.MessageBrokerImpl;
+import com.kdimitrov.edentist.server.common.services.implementations.PresentAppointmentService;
 import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,14 +38,17 @@ import static com.kdimitrov.edentist.server.common.utils.Routes.USER_PARAM;
 public class AppointmentsController {
 
     final AuthenticationServiceImpl authenticationService;
-    final AppointmentServiceImpl appointmentService;
+    final PresentAppointmentService appointmentService;
+    final ArchivedAppointmentService archivedAppointmentService;
     final MessageBrokerImpl broker;
 
     public AppointmentsController(AuthenticationServiceImpl authenticationService,
-                                  AppointmentServiceImpl appointmentService,
+                                  PresentAppointmentService appointmentService,
+                                  ArchivedAppointmentService archivedAppointmentService,
                                   MessageBrokerImpl broker) {
         this.authenticationService = authenticationService;
         this.appointmentService = appointmentService;
+        this.archivedAppointmentService = archivedAppointmentService;
         this.broker = broker;
     }
 
@@ -69,7 +72,7 @@ public class AppointmentsController {
             @RequestParam(name = USER_PARAM, required = false) String userEmail) {
 
         return authenticationService
-                .withToken(() -> appointmentService.filterArchivedAppointments(filter, userEmail), auth);
+                .withToken(() -> archivedAppointmentService.filterAppointments(filter, userEmail), auth);
     }
 
     @PostMapping

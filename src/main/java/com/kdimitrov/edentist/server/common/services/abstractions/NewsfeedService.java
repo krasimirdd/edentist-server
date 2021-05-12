@@ -1,4 +1,4 @@
-package com.kdimitrov.edentist.server.common.services;
+package com.kdimitrov.edentist.server.common.services.abstractions;
 
 import com.kwabenaberko.newsapilib.models.Article;
 

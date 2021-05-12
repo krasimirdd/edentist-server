@@ -1,6 +1,6 @@
 package com.kdimitrov.edentist.server.common.services.implementations;
 
-import com.kdimitrov.edentist.server.common.services.MessageBroker;
+import com.kdimitrov.edentist.server.common.services.abstractions.MessageBroker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
