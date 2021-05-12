@@ -2,8 +2,8 @@ package com.kdimitrov.edentist.server.common.api;
 
 import com.kdimitrov.edentist.server.common.models.dto.DoctorDto;
 import com.kdimitrov.edentist.server.common.models.dto.ServiceDto;
-import com.kdimitrov.edentist.server.common.services.AuthenticationServiceImpl;
-import com.kdimitrov.edentist.server.common.services.ApiServiceImpl;
+import com.kdimitrov.edentist.server.common.services.implementations.AuthenticationServiceImpl;
+import com.kdimitrov.edentist.server.common.services.implementations.ApiServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,4 +1,4 @@
-package com.kdimitrov.edentist.server.common.services;
+package com.kdimitrov.edentist.server.common.services.implementations;
 
 import com.kdimitrov.edentist.server.common.exceptions.NotFound;
 import com.kdimitrov.edentist.server.common.exceptions.OperationUnsuccessful;
@@ -16,6 +16,7 @@ import com.kdimitrov.edentist.server.common.repository.DoctorsRepository;
 import com.kdimitrov.edentist.server.common.repository.PatientRepository;
 import com.kdimitrov.edentist.server.common.repository.PresentAppointmentsRepository;
 import com.kdimitrov.edentist.server.common.repository.ServicesRepository;
+import com.kdimitrov.edentist.server.common.services.AppointmentService;
 import com.kdimitrov.edentist.server.common.utils.AppointmentsHelper;
 import com.kdimitrov.edentist.server.common.utils.CustomMapper;
 import com.kdimitrov.edentist.server.common.utils.ObjectMapperUtils;
@@ -56,9 +57,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         this.archivedAppointmentsRepository = archivedAppointmentsRepository;
         helper = new AppointmentsHelper(doctorsRepository,
                                         patientRepository,
-                                        serviceRepository,
-                                        appointmentsRepository,
-                                        archivedAppointmentsRepository);
+                                        serviceRepository);
     }
 
     @Override
@@ -72,21 +71,21 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public AppointmentDto findSingleAppointment(String userEmail, String code) throws NotFoundException {
+    public AppointmentDto findSingleAppointment(String userEmail, String code) throws NotFound {
         return helper.getFiltered("", userEmail, archivedAppointmentsRepository)
                 .stream()
                 .filter(appointment -> appointment.getVisitCode().equals(code))
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("No record for provided code"));
+                .orElseThrow(() -> new NotFound("No record for provided code"));
     }
 
     @Override
-    public ResponseEntity<String> save(AppointmentRequest request) throws NotFoundException {
+    public ResponseEntity<String> saveAppointment(AppointmentRequest request) throws NotFound {
 
         Doctor doctor = doctorsRepository.findById(request.getDoctorId())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getDoctorId()));
+                .orElseThrow(() -> new NotFound("No record for " + request.getDoctorId()));
         Service service = serviceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getServiceId()));
+                .orElseThrow(() -> new NotFound("No record for " + request.getServiceId()));
 
         if (!isAvailable(request)) {
             return new ResponseEntity<>(
@@ -113,7 +112,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public String update(Appointment request, long id) throws NotFoundException {
+    public String updateAppointment(Appointment request, long id) throws NotFound {
 
         helper.validateRequest(request, id);
 
@@ -142,7 +141,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public String delete(long id) {
+    public String deleteAppointment(long id) throws NotFound {
         Optional<Appointment> byId = appointmentsRepository.findById(id);
 
         if (byId.isPresent()) {

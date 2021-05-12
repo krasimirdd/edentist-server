@@ -8,12 +8,9 @@ import com.kdimitrov.edentist.server.common.models.Patient;
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.server.common.models.rest.AppointmentRequest;
 import com.kdimitrov.edentist.server.common.repository.AppointmentsRepository;
-import com.kdimitrov.edentist.server.common.repository.ArchiveAppointmentsRepository;
 import com.kdimitrov.edentist.server.common.repository.DoctorsRepository;
 import com.kdimitrov.edentist.server.common.repository.PatientRepository;
-import com.kdimitrov.edentist.server.common.repository.PresentAppointmentsRepository;
 import com.kdimitrov.edentist.server.common.repository.ServicesRepository;
-import javassist.NotFoundException;
 import org.apache.logging.log4j.util.Strings;
 
 import java.util.ArrayList;
@@ -54,7 +51,7 @@ public class AppointmentsHelper {
 
     public <T extends AppointmentsRepository<? extends Entity>> List<AppointmentDto> getFiltered(String filter,
                                                                                                  String userEmail,
-                                                                                                 T repository) {
+                                                                                                 T repository) throws NotFound {
 
         boolean shouldFilterByUser = Strings.isNotBlank(userEmail);
         List<AppointmentDto> filteredByUser = new ArrayList<>();
@@ -75,15 +72,17 @@ public class AppointmentsHelper {
 
     }
 
+    @SuppressWarnings("rawtypes")
     private <T extends AppointmentsRepository<? extends Entity>> List<AppointmentDto> findByUser(String email,
-                                                                                                 T repository) {
+                                                                                                 T repository) throws NotFound {
+
         Optional<Doctor> doctorOpt = doctorsRepository.findByEmail(email);
         boolean isDoctor = doctorOpt.isPresent();
 
         Optional<Patient> patientOpt = patientRepository.findByEmail(email);
         boolean isPatient = patientOpt.isPresent();
 
-        List appointments = new ArrayList<>();
+        List appointments = new ArrayList();
         if (isDoctor) {
             appointments.addAll(repository.findAllByDoctorId(doctorOpt.get().getId()));
         } else if (isPatient) {
@@ -92,14 +91,13 @@ public class AppointmentsHelper {
             throw new NotFound("No user found");
         }
 
-        return mapToDtoList(appointments);
+        return ObjectMapperUtils.mapAll(appointments, AppointmentDto.class);
     }
 
     private <T extends AppointmentsRepository<? extends Entity>> List<AppointmentDto> filterByStatus(boolean filterByUser,
                                                                                                      List<AppointmentDto> byUser,
                                                                                                      String token,
                                                                                                      T repository) {
-
         List<AppointmentDto> result = new ArrayList<>();
         BiPredicate<AppointmentDto, String> filterByStatusPredicate =
                 (appointment, status) -> appointment.getStatus().equalsIgnoreCase(status);
@@ -115,32 +113,23 @@ public class AppointmentsHelper {
                                 .collect(Collectors.toList())
                 );
             } else {
-                result.addAll(
-                        mapToDtoList(repository.findAllByStatus(status))
-                );
+                result.addAll(ObjectMapperUtils.mapAll(repository.findAllByStatus(status), AppointmentDto.class));
             }
         }
         return result;
     }
 
-    public void validateRequest(Appointment request, long id) throws NotFoundException {
+    public void validateRequest(Appointment request, long id) throws NotFound {
         if (request.getId() != id) {
-            throw new NotFoundException("No record for " + id);
+            throw new NotFound("No record for " + id);
         }
 
         doctorsRepository.findById(request.getDoctor().getId())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getDoctor().getId()));
+                .orElseThrow(() -> new NotFound("No record for " + request.getDoctor().getId()));
         serviceRepository.findById(request.getService().getId())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getService().getId()));
+                .orElseThrow(() -> new NotFound("No record for " + request.getService().getId()));
         patientRepository.findByEmail(request.getPatient().getEmail())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getPatient().getEmail()));
-    }
-
-    private <T> List<AppointmentDto> mapToDtoList(List<T> allByStatus) {
-        return allByStatus
-                .stream()
-                .map((e) -> ObjectMapperUtils.map(e, AppointmentDto.class))
-                .collect(Collectors.toList());
+                .orElseThrow(() -> new NotFound("No record for " + request.getPatient().getEmail()));
     }
 
 }

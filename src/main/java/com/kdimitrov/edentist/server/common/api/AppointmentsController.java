@@ -1,14 +1,12 @@
 package com.kdimitrov.edentist.server.common.api;
 
 import com.kdimitrov.edentist.server.common.exceptions.NotFound;
-import com.kdimitrov.edentist.server.common.exceptions.OperationUnsuccessful;
 import com.kdimitrov.edentist.server.common.models.Appointment;
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.server.common.models.rest.AppointmentRequest;
-import com.kdimitrov.edentist.server.common.services.AppointmentServiceImpl;
-import com.kdimitrov.edentist.server.common.services.AuthenticationServiceImpl;
-import com.kdimitrov.edentist.server.common.services.MessageBroker;
-import javassist.NotFoundException;
+import com.kdimitrov.edentist.server.common.services.implementations.AppointmentServiceImpl;
+import com.kdimitrov.edentist.server.common.services.implementations.AuthenticationServiceImpl;
+import com.kdimitrov.edentist.server.common.services.implementations.MessageBrokerImpl;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.naming.AuthenticationException;
 import java.util.List;
 
 import static com.kdimitrov.edentist.server.common.utils.Routes.APPOINTMENTS;
@@ -42,11 +39,11 @@ public class AppointmentsController {
 
     final AuthenticationServiceImpl authenticationService;
     final AppointmentServiceImpl appointmentService;
-    final MessageBroker broker;
+    final MessageBrokerImpl broker;
 
     public AppointmentsController(AuthenticationServiceImpl authenticationService,
                                   AppointmentServiceImpl appointmentService,
-                                  MessageBroker broker) {
+                                  MessageBrokerImpl broker) {
         this.authenticationService = authenticationService;
         this.appointmentService = appointmentService;
         this.broker = broker;
@@ -78,17 +75,12 @@ public class AppointmentsController {
     @PostMapping
     @ResponseBody
     public ResponseEntity<String> addAppointments(
-            @RequestBody AppointmentRequest request) {
+            @RequestBody AppointmentRequest request) throws NotFound {
 
-        try {
-            ResponseEntity<String> entity = appointmentService.save(request);
-            broker.translate(new JSONObject(entity.getBody()));
-            return entity;
+        ResponseEntity<String> entity = appointmentService.saveAppointment(request);
+        broker.translate(new JSONObject(entity.getBody()));
+        return entity;
 
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
     }
 
     @PostMapping(BY_ID)
@@ -99,7 +91,7 @@ public class AppointmentsController {
             @PathVariable(value = ID_PARAM) long id) {
 
         return authenticationService
-                .withToken(() -> appointmentService.update(request, id), auth);
+                .withToken(() -> appointmentService.updateAppointment(request, id), auth);
     }
 
     @DeleteMapping(BY_ID)
@@ -108,6 +100,6 @@ public class AppointmentsController {
             @PathVariable(value = ID_PARAM) long id) {
 
         return authenticationService
-                .withToken(() -> appointmentService.delete(id), auth);
+                .withToken(() -> appointmentService.deleteAppointment(id), auth);
     }
 }

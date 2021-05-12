@@ -1,6 +1,7 @@
-package com.kdimitrov.edentist.server.common.services;
+package com.kdimitrov.edentist.server.common.services.implementations;
 
 import com.kdimitrov.edentist.app.config.MQConfig;
+import com.kdimitrov.edentist.server.common.services.MQSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;

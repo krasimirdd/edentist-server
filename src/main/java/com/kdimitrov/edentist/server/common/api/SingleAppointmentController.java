@@ -1,7 +1,7 @@
 package com.kdimitrov.edentist.server.common.api;
 
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
-import com.kdimitrov.edentist.server.common.services.AppointmentServiceImpl;
+import com.kdimitrov.edentist.server.common.services.implementations.AppointmentServiceImpl;
 import javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

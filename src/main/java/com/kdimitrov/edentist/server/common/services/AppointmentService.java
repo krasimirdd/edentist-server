@@ -1,9 +1,9 @@
 package com.kdimitrov.edentist.server.common.services;
 
+import com.kdimitrov.edentist.server.common.exceptions.NotFound;
 import com.kdimitrov.edentist.server.common.models.Appointment;
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.server.common.models.rest.AppointmentRequest;
-import javassist.NotFoundException;
 import org.springframework.http.ResponseEntity;
 
 import javax.management.OperationsException;
@@ -15,12 +15,12 @@ public interface AppointmentService {
 
     List<AppointmentDto> filterArchivedAppointments(String filter, String userEmail);
 
-    AppointmentDto findSingleAppointment(String userEmail, String code) throws NotFoundException;
+    AppointmentDto findSingleAppointment(String userEmail, String code) throws NotFound;
 
-    ResponseEntity<String> save(AppointmentRequest appointment) throws NotFoundException;
+    ResponseEntity<String> saveAppointment(AppointmentRequest appointment) throws NotFound;
 
-    String update(Appointment request, long id) throws NotFoundException;
+    String updateAppointment(Appointment request, long id) throws NotFound;
 
-    String delete(long id) throws NotFoundException, OperationsException;
+    String deleteAppointment(long id) throws OperationsException, NotFound;
 
 }
