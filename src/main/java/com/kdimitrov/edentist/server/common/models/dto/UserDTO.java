@@ -9,6 +9,9 @@ public class UserDTO extends DTOEntity {
     protected String phone;
     protected String name;
     protected String role;
+    protected String description;
+    protected String specialization;
+    protected String img;
 
     public UserDTO() {
     }
@@ -26,6 +29,10 @@ public class UserDTO extends DTOEntity {
         this.email = entity.getEmail();
         this.phone = entity.getPhone();
         this.name = entity.getName();
+        this.description = entity.getName();
+        this.specialization = entity.getName();
+        this.specialization = entity.getName();
+        this.img = entity.getImg();
         this.role = "doctor";
     }
 
@@ -67,5 +74,29 @@ public class UserDTO extends DTOEntity {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
     }
 }

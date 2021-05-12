@@ -1,14 +1,14 @@
 package com.kdimitrov.edentist.server.common.api.graphql;
 
-import com.kdimitrov.edentist.server.common.services.DefService;
+import com.kdimitrov.edentist.server.common.services.ApiService;
 import graphql.kickstart.tools.GraphQLQueryResolver;
 import org.springframework.stereotype.Service;
 
 @Service
 public class Query implements GraphQLQueryResolver {
-    private final DefService service;
+    private final ApiService service;
 
-    public Query(final DefService service) {
+    public Query(final ApiService service) {
         this.service = service;
     }
 

@@ -1,11 +1,14 @@
 package com.kdimitrov.edentist.server.common.services;
 
 import com.kdimitrov.edentist.app.config.MQConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MQSenderImpl<T> implements MQSender<T> {
+    private final Logger logger = LoggerFactory.getLogger(MQSenderImpl.class);
 
     private final AmqpTemplate rabbitTemplate;
     private final MQConfig mqConfig;
@@ -18,6 +21,6 @@ public class MQSenderImpl<T> implements MQSender<T> {
     @Override
     public void send(T entity) {
         rabbitTemplate.convertAndSend(mqConfig.getExchange(), mqConfig.getRoutingkey(), entity);
-        System.out.println("Send msg = " + entity);
+        logger.info("Send msg = " + entity);
     }
 }

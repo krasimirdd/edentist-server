@@ -6,11 +6,18 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.kdimitrov.edentist.app.config.ApplicationConfig;
+import com.kdimitrov.edentist.server.common.exceptions.OperationUnsuccessful;
+import javassist.NotFoundException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
+
+import static com.kdimitrov.edentist.server.common.utils.Routes.AUTHORIZATION;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -18,12 +25,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private static final String ISSUER = "edentist-server";
 
     private final byte[] secret;
-    private final ApplicationConfig config;
     private final Algorithm algorithm;
     private final JWTVerifier verifier;
 
     public AuthenticationServiceImpl(ApplicationConfig config) {
-        this.config = config;
         this.secret = config.getSecret();
         this.algorithm = Algorithm.HMAC256(secret);
         this.verifier = JWT.require(algorithm)
@@ -37,8 +42,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .sign(algorithm);
     }
 
-    @Override
-    public void validateToken(String token) throws AuthenticationException {
+    protected void validateToken(String token) throws AuthenticationException {
         try {
             if (StringUtils.isEmpty(token)) {
                 throw new AuthenticationException("Authentication header is missing!");
@@ -49,9 +53,48 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    public void validateSecret(String secret) throws AuthenticationException {
+    private void validateSecret(String secret) throws AuthenticationException {
         if (StringUtils.isEmpty(secret) || !Arrays.equals(this.secret, secret.getBytes())) {
             throw new AuthenticationException("Authentication header error!");
+        }
+    }
+
+    @Override
+    public <T> ResponseEntity<T> withToken(Callable<T> callable, String token) {
+        try {
+            validateToken(token);
+            return new ResponseEntity<>(callable.call(), HttpStatus.OK);
+        } catch (AuthenticationException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (NotFoundException | OperationUnsuccessful e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public <T> ResponseEntity<T> withSecret(Callable<T> callable, String secret, boolean genJwt) {
+        try {
+            validateSecret(secret);
+            return genJwt
+                   ? ResponseEntity.ok()
+                           .header(AUTHORIZATION, generateJwt())
+                           .body(callable.call())
+                   : ResponseEntity.ok()
+                           .body(callable.call());
+        } catch (AuthenticationException e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (NotFoundException | OperationUnsuccessful e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

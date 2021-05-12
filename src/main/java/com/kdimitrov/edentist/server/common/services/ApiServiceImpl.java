@@ -9,8 +9,11 @@ import com.kdimitrov.edentist.server.common.repository.DoctorsRepository;
 import com.kdimitrov.edentist.server.common.repository.PatientRepository;
 import com.kdimitrov.edentist.server.common.repository.ServicesRepository;
 import com.kdimitrov.edentist.server.common.utils.CustomMapper;
+import com.kdimitrov.edentist.server.common.utils.GraphApiExecutor;
 import com.kdimitrov.edentist.server.common.utils.ObjectMapperUtils;
 import com.kdimitrov.edentist.app.config.ApplicationConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,20 +21,26 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class DefServiceImpl implements DefService {
-    final ApplicationConfig config;
+public class ApiServiceImpl implements ApiService {
+    private final Logger logger = LogManager.getLogger(ApiServiceImpl.class);
 
-    final ServicesRepository servicesRepository;
-    final DoctorsRepository doctorsRepository;
-    final PatientRepository patientRepository;
+    private final ApplicationConfig config;
 
-    public DefServiceImpl(ApplicationConfig config, ServicesRepository servicesRepository,
+    private final ServicesRepository servicesRepository;
+    private final DoctorsRepository doctorsRepository;
+    private final PatientRepository patientRepository;
+    private final GraphApiExecutor graphExecutor;
+
+    public ApiServiceImpl(ApplicationConfig config,
+                          ServicesRepository servicesRepository,
                           DoctorsRepository doctorsRepository,
-                          PatientRepository patientRepository) {
+                          PatientRepository patientRepository,
+                          GraphApiExecutor graphExecutor) {
         this.config = config;
         this.servicesRepository = servicesRepository;
         this.doctorsRepository = doctorsRepository;
         this.patientRepository = patientRepository;
+        this.graphExecutor = graphExecutor;
     }
 
     @Override
@@ -51,7 +60,7 @@ public class DefServiceImpl implements DefService {
     }
 
     @Override
-    public String findById(String userEmail) throws NotFound {
+    public String findUser(String userEmail) throws NotFound {
         if (config.getSuperadminEmail().equals(userEmail)) {
             return CustomMapper.toAdminDtoString(config.getSuperadminEmail());
         }
@@ -71,23 +80,34 @@ public class DefServiceImpl implements DefService {
 
     @Override
     public String save(String email) {
-        Optional<Patient> patientOpt = patientRepository.findByEmail(email);
-        if (patientOpt.isPresent()) {
-            return findById(email);
-        }
 
-        Patient patient = new Patient();
-        patient.setEmail(email);
-        return CustomMapper.toUserDtoString(patientRepository.saveAndFlush(patient));
+        try {
+            return findUser(email);
+        } catch (NotFound notFound) {
+            logger.info("Couldn't not find user with email '{}'. Creating one!", email);
+
+            Patient patient = new Patient();
+            patient.setEmail(email);
+            return CustomMapper.toUserDtoString(patientRepository.saveAndFlush(patient));
+        }
     }
 
     @Override
-    public Doctor createUser(String email, String name, String password, String phone) {
+    public Doctor createUser(String email,
+                             String name,
+                             String phone,
+                             String specialization,
+                             String description,
+                             String img) {
         Doctor doctor = new Doctor();
 
         doctor.setEmail(email);
         doctor.setName(name);
         doctor.setPhone(phone);
-        return doctorsRepository.saveAndFlush(doctor);
+        doctor.setSpecialization(specialization);
+        doctor.setDescription(description);
+        doctor.setImg(img);
+
+        return graphExecutor.execute(() -> doctorsRepository.saveAndFlush(doctor), GraphApiExecutor.Method.CREATE);
     }
 }

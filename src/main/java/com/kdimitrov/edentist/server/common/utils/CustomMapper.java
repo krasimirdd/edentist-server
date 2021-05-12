@@ -18,10 +18,8 @@ import static java.time.Instant.ofEpochMilli;
 public class CustomMapper {
     public static String toAppointmentResponse(Appointment entity) {
         try {
-            // create `ObjectMapper` instance
             ObjectMapper mapper = new ObjectMapper();
 
-            // create a JSON object
             ObjectNode response = mapper.createObjectNode();
             response.put("id", entity.getId());
             response.put("visitCode", entity.getVisitCode());
@@ -30,33 +28,13 @@ public class CustomMapper {
             response.put("medicalHistory", entity.getMedicalHistory());
             response.put("status", entity.getStatus());
 
-            // create a child JSON object
-            ObjectNode doctor = mapper.createObjectNode();
-            Doctor doctorEntity = entity.getDoctor();
-            doctor.put("id", doctorEntity.getId());
-            doctor.put("name", doctorEntity.getName());
-            doctor.put("phone", doctorEntity.getPhone());
-            doctor.put("email", doctorEntity.getEmail());
+            ObjectNode doctor = getDoctorNode(entity.getDoctor(), mapper);
             response.set("doctor", doctor);
-
-            // create a child JSON object
-            ObjectNode patient = mapper.createObjectNode();
-            Patient patientEntity = entity.getPatient();
-            patient.put("id", patientEntity.getId());
-            patient.put("name", patientEntity.getName());
-            patient.put("phone", patientEntity.getPhone());
-            patient.put("email", patientEntity.getEmail());
+            ObjectNode patient = getPatientNode(entity.getPatient(), mapper);
             response.set("patient", patient);
-
-            ObjectNode service = mapper.createObjectNode();
-            Service serviceEntity = entity.getService();
-            service.put("id", serviceEntity.getId());
-            service.put("type", serviceEntity.getType());
+            ObjectNode service = getServiceNode(entity.getService(), mapper);
             response.set("service", service);
 
-            // convert `ObjectNode` to pretty-print JSON
-
-            // print json
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
 
         } catch (Exception ex) {
@@ -67,28 +45,16 @@ public class CustomMapper {
 
     public static String toAppointmentProposition(AppointmentRequest nextAvailable, Doctor doctorEntity, Service serviceEntity) {
         try {
-            // create `ObjectMapper` instance
             ObjectMapper mapper = new ObjectMapper();
 
-            // create a JSON object
             ObjectNode response = mapper.createObjectNode();
             response.put("date", LocalDateTime.ofInstant(ofEpochMilli(nextAvailable.getTimestamp()), ZoneId.systemDefault())
                     .toString());
-
-            // create a child JSON object
-            ObjectNode doctorNode = mapper.createObjectNode();
-            doctorNode.put("id", doctorEntity.getId());
-            doctorNode.put("name", doctorEntity.getName());
-            doctorNode.put("phone", doctorEntity.getPhone());
-            doctorNode.put("email", doctorEntity.getEmail());
+            ObjectNode doctorNode = getDoctorNode(doctorEntity, mapper);
             response.set("doctor", doctorNode);
-
-            ObjectNode serviceNode = mapper.createObjectNode();
-            serviceNode.put("id", serviceEntity.getId());
-            serviceNode.put("type", serviceEntity.getType());
+            ObjectNode serviceNode = getServiceNode(serviceEntity, mapper);
             response.set("service", serviceNode);
 
-            // print json
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response);
 
         } catch (Exception ex) {
@@ -100,7 +66,7 @@ public class CustomMapper {
     public static String toAdminDtoString(String superadminEmail) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            ObjectNode response = toSuperadmin(superadminEmail, mapper);
+            ObjectNode response = getSuperadminNode(superadminEmail, mapper);
             // print json
             return toUserDtoString(response);
 
@@ -113,7 +79,6 @@ public class CustomMapper {
     public static <T extends Entity> String toUserDtoString(T t) {
         try {
             ObjectNode response = getJsonNodes(t);
-            // print json
             return toUserDtoString(response);
 
         } catch (Exception ex) {
@@ -137,9 +102,9 @@ public class CustomMapper {
         ObjectMapper mapper = new ObjectMapper();
 
         if (t instanceof Doctor) {
-            return toDoctor((Doctor) t, mapper);
+            return getDoctorNode((Doctor) t, mapper).put("role", "doctor");
         } else if (t instanceof Patient) {
-            return toPatient((Patient) t, mapper);
+            return getPatientNode((Patient) t, mapper).put("role", "patient");
         }
 
         return null;
@@ -157,34 +122,43 @@ public class CustomMapper {
         }
     }
 
-    private static ObjectNode toPatient(Patient entity, ObjectMapper mapper) {
-        ObjectNode response = mapper.createObjectNode();
-        response.put("id", entity.getId());
-        response.put("email", entity.getEmail());
-        response.put("name", entity.getName());
-        response.put("phone", entity.getPhone());
-        response.put("blood", entity.getBloodType());
-        response.put("role", "patient");
-
-        return response;
-    }
-
-    private static ObjectNode toDoctor(Doctor entity, ObjectMapper mapper) {
-        ObjectNode response = mapper.createObjectNode();
-        response.put("id", entity.getId());
-        response.put("email", entity.getEmail());
-        response.put("name", entity.getName());
-        response.put("phone", entity.getPhone());
-        response.put("role", "doctor");
-
-        return response;
-    }
-
-    private static ObjectNode toSuperadmin(String email, ObjectMapper mapper) {
+    private static ObjectNode getSuperadminNode(String email, ObjectMapper mapper) {
         ObjectNode response = mapper.createObjectNode();
         response.put("email", email);
         response.put("role", "admin");
 
         return response;
+    }
+
+    private static ObjectNode getDoctorNode(Doctor doctorEntity, ObjectMapper mapper) {
+        ObjectNode objectNode = mapper.createObjectNode();
+        objectNode.put("id", doctorEntity.getId());
+        objectNode.put("name", doctorEntity.getName());
+        objectNode.put("phone", doctorEntity.getPhone());
+        objectNode.put("email", doctorEntity.getEmail());
+        objectNode.put("description", doctorEntity.getDescription());
+        objectNode.put("specialization", doctorEntity.getSpecialization());
+        objectNode.put("img", doctorEntity.getImg());
+
+        return objectNode;
+    }
+
+    private static ObjectNode getPatientNode(Patient patientEntity, ObjectMapper mapper) {
+        ObjectNode objectNode = mapper.createObjectNode();
+        objectNode.put("id", patientEntity.getId());
+        objectNode.put("email", patientEntity.getEmail());
+        objectNode.put("name", patientEntity.getName());
+        objectNode.put("phone", patientEntity.getPhone());
+        objectNode.put("blood", patientEntity.getBloodType());
+
+        return objectNode;
+    }
+
+    private static ObjectNode getServiceNode(Service serviceEntity, ObjectMapper mapper) {
+        ObjectNode objectNode = mapper.createObjectNode();
+        objectNode.put("id", serviceEntity.getId());
+        objectNode.put("type", serviceEntity.getType());
+
+        return objectNode;
     }
 }

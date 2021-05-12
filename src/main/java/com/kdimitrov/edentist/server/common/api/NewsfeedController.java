@@ -4,15 +4,18 @@ import com.kdimitrov.edentist.server.common.services.NewsfeedService;
 import com.kwabenaberko.newsapilib.models.Article;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static com.kdimitrov.edentist.server.common.utils.Routes.API_NEWSFEED_ALL;
-import static com.kdimitrov.edentist.server.common.utils.Routes.API_NEWSFEED_TOP;
+import static com.kdimitrov.edentist.server.common.utils.Routes.ALL;
+import static com.kdimitrov.edentist.server.common.utils.Routes.TOP;
+import static com.kdimitrov.edentist.server.common.utils.Routes.NEWSFEED;
 
 @RestController
+@RequestMapping(value = NEWSFEED)
 @CrossOrigin("*")
 public class NewsfeedController {
 
@@ -22,7 +25,7 @@ public class NewsfeedController {
         this.newsfeedService = newsfeedService;
     }
 
-    @GetMapping(API_NEWSFEED_TOP)
+    @GetMapping(TOP)
     @ResponseBody
     public List<Article> getTop() {
         try {
@@ -33,7 +36,7 @@ public class NewsfeedController {
         }
     }
 
-    @GetMapping(API_NEWSFEED_ALL)
+    @GetMapping(ALL)
     @ResponseBody
     public List<Article> getAll() {
         try {

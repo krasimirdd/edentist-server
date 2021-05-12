@@ -29,6 +29,6 @@ public class MessageBroker {
     public <T> void translate(T entity) {
         Message message = new Message(entity.toString().getBytes(UTF_8), new MessageProperties());
         rabbitTemplate.send(exchange, routingkey, message);
-        logger.debug("Send msg = {}", entity);
+        logger.info("Send msg = {}", entity);
     }
 }

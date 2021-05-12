@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,15 +28,15 @@ import javax.naming.AuthenticationException;
 import java.util.List;
 
 import static com.kdimitrov.edentist.server.common.utils.Routes.APPOINTMENTS;
-import static com.kdimitrov.edentist.server.common.utils.Routes.APPOINTMENTS_WITH_ID;
+import static com.kdimitrov.edentist.server.common.utils.Routes.ARCHIVED;
 import static com.kdimitrov.edentist.server.common.utils.Routes.AUTHORIZATION;
-import static com.kdimitrov.edentist.server.common.utils.Routes.CODE_HEADER;
+import static com.kdimitrov.edentist.server.common.utils.Routes.BY_ID;
 import static com.kdimitrov.edentist.server.common.utils.Routes.FILTER_HEADER;
 import static com.kdimitrov.edentist.server.common.utils.Routes.ID_PARAM;
-import static com.kdimitrov.edentist.server.common.utils.Routes.SINGLE_APPOINTMENT;
 import static com.kdimitrov.edentist.server.common.utils.Routes.USER_PARAM;
 
 @RestController
+@RequestMapping(value = APPOINTMENTS)
 @CrossOrigin("*")
 public class AppointmentsController {
 
@@ -51,39 +52,30 @@ public class AppointmentsController {
         this.broker = broker;
     }
 
-    @GetMapping(APPOINTMENTS)
+    @GetMapping
     @ResponseBody
     public ResponseEntity<List<AppointmentDto>> getAppointments(
             @RequestHeader(value = AUTHORIZATION, required = false) String auth,
             @RequestHeader(value = FILTER_HEADER, required = false) String filter,
+            @RequestParam(name = USER_PARAM) String userEmail) {
+
+        return authenticationService
+                .withToken(() -> appointmentService.filterAppointments(filter, userEmail), auth);
+    }
+
+
+    @GetMapping(ARCHIVED)
+    @ResponseBody
+    public ResponseEntity<List<AppointmentDto>> getArchivedAppointments(
+            @RequestHeader(value = AUTHORIZATION, required = false) String auth,
+            @RequestHeader(value = FILTER_HEADER, required = false) String filter,
             @RequestParam(name = USER_PARAM, required = false) String userEmail) {
 
-        try {
-            this.authenticationService.validateToken(auth);
-            return new ResponseEntity<>(appointmentService.filterAppointments(filter, userEmail), HttpStatus.OK);
-
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+        return authenticationService
+                .withToken(() -> appointmentService.filterArchivedAppointments(filter, userEmail), auth);
     }
 
-    @GetMapping(SINGLE_APPOINTMENT)
-    @ResponseBody
-    public ResponseEntity<AppointmentDto> getSingleAppointment(
-            @RequestParam(name = USER_PARAM) String userEmail,
-            @RequestHeader(name = CODE_HEADER) String code) {
-
-        try {
-            return new ResponseEntity<>(appointmentService.findSingleAppointment(userEmail, code), HttpStatus.OK);
-
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-
-    @PostMapping(APPOINTMENTS)
+    @PostMapping
     @ResponseBody
     public ResponseEntity<String> addAppointments(
             @RequestBody AppointmentRequest request) {
@@ -99,42 +91,23 @@ public class AppointmentsController {
         }
     }
 
-    @PostMapping(APPOINTMENTS_WITH_ID)
+    @PostMapping(BY_ID)
     @ResponseBody
     public ResponseEntity<String> updateAppointment(
             @RequestBody Appointment request,
             @RequestHeader(value = AUTHORIZATION, required = false) String auth,
             @PathVariable(value = ID_PARAM) long id) {
 
-        try {
-            this.authenticationService.validateToken(auth);
-            return ResponseEntity.ok(appointmentService.update(request, id));
-
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+        return authenticationService
+                .withToken(() -> appointmentService.update(request, id), auth);
     }
 
-    @DeleteMapping(APPOINTMENTS_WITH_ID)
+    @DeleteMapping(BY_ID)
     public ResponseEntity<String> deleteAppointment(
             @RequestHeader(value = AUTHORIZATION, required = false) String auth,
             @PathVariable(value = ID_PARAM) long id) {
 
-        try {
-            this.authenticationService.validateToken(auth);
-            appointmentService.delete(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-
-        } catch (NotFound | OperationUnsuccessful e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
+        return authenticationService
+                .withToken(() -> appointmentService.delete(id), auth);
     }
 }

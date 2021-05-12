@@ -11,26 +11,24 @@ import com.kdimitrov.edentist.server.common.models.dto.DoctorDto;
 import com.kdimitrov.edentist.server.common.models.dto.PatientDto;
 import com.kdimitrov.edentist.server.common.models.dto.ServiceDto;
 import com.kdimitrov.edentist.server.common.models.rest.AppointmentRequest;
-import com.kdimitrov.edentist.server.common.repository.AppointmentsRepository;
+import com.kdimitrov.edentist.server.common.repository.ArchiveAppointmentsRepository;
 import com.kdimitrov.edentist.server.common.repository.DoctorsRepository;
 import com.kdimitrov.edentist.server.common.repository.PatientRepository;
+import com.kdimitrov.edentist.server.common.repository.PresentAppointmentsRepository;
 import com.kdimitrov.edentist.server.common.repository.ServicesRepository;
+import com.kdimitrov.edentist.server.common.utils.AppointmentsHelper;
 import com.kdimitrov.edentist.server.common.utils.CustomMapper;
 import com.kdimitrov.edentist.server.common.utils.ObjectMapperUtils;
 import javassist.NotFoundException;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
+import static com.kdimitrov.edentist.server.common.utils.AppointmentsHelper.updatePatientInfoIfNeeded;
 import static com.kdimitrov.edentist.server.common.utils.WorkableLocalDateTimeUtil.workable;
 import static java.time.Instant.ofEpochMilli;
 import static java.time.LocalDateTime.ofInstant;
@@ -39,31 +37,43 @@ import static java.time.ZoneId.systemDefault;
 @org.springframework.stereotype.Service
 public class AppointmentServiceImpl implements AppointmentService {
 
-    final AppointmentsRepository appointmentsRepository;
-    final DoctorsRepository doctorsRepository;
-    final PatientRepository patientRepository;
-    final ServicesRepository serviceRepository;
+    private final PresentAppointmentsRepository appointmentsRepository;
+    private final DoctorsRepository doctorsRepository;
+    private final PatientRepository patientRepository;
+    private final ServicesRepository serviceRepository;
+    private final ArchiveAppointmentsRepository archivedAppointmentsRepository;
+    private final AppointmentsHelper helper;
 
-    public AppointmentServiceImpl(AppointmentsRepository appointmentsRepository,
+    public AppointmentServiceImpl(PresentAppointmentsRepository appointmentsRepository,
                                   DoctorsRepository doctorsRepository,
                                   PatientRepository patientRepository,
-                                  ServicesRepository serviceRepository) {
+                                  ServicesRepository serviceRepository,
+                                  ArchiveAppointmentsRepository archivedAppointmentsRepository) {
         this.appointmentsRepository = appointmentsRepository;
         this.doctorsRepository = doctorsRepository;
         this.patientRepository = patientRepository;
         this.serviceRepository = serviceRepository;
+        this.archivedAppointmentsRepository = archivedAppointmentsRepository;
+        helper = new AppointmentsHelper(doctorsRepository,
+                                        patientRepository,
+                                        serviceRepository,
+                                        appointmentsRepository,
+                                        archivedAppointmentsRepository);
     }
 
     @Override
     public List<AppointmentDto> filterAppointments(String filter, String userEmail) {
-        return Strings.isEmpty(filter) && Strings.isEmpty(userEmail)
-               ? getAll()
-               : getFiltered(filter, userEmail);
+        return helper.getFiltered(filter, userEmail, appointmentsRepository);
+    }
+
+    @Override
+    public List<AppointmentDto> filterArchivedAppointments(String filter, String userEmail) {
+        return helper.getFiltered(filter, userEmail, archivedAppointmentsRepository);
     }
 
     @Override
     public AppointmentDto findSingleAppointment(String userEmail, String code) throws NotFoundException {
-        return getFiltered("", userEmail)
+        return helper.getFiltered("", userEmail, archivedAppointmentsRepository)
                 .stream()
                 .filter(appointment -> appointment.getVisitCode().equals(code))
                 .findFirst()
@@ -86,7 +96,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Optional<Patient> patientOpt = patientRepository.findByEmail(request.getEmail());
         Patient patient = patientOpt.orElseGet(() -> patientRepository.save(new Patient(request)));
-        updatePatientInfo(request, patient);
+        if (updatePatientInfoIfNeeded(request, patient)) {
+            patientRepository.saveAndFlush(patient);
+        }
 
         DoctorDto doctorDto = ObjectMapperUtils.map(doctor, new DoctorDto());
         ServiceDto serviceDto = ObjectMapperUtils.map(service, new ServiceDto());
@@ -100,20 +112,48 @@ public class AppointmentServiceImpl implements AppointmentService {
         return new ResponseEntity<>(CustomMapper.toAppointmentResponse(entity), HttpStatus.OK);
     }
 
-    private void updatePatientInfo(AppointmentRequest request, Patient patient) {
-        boolean shouldUpdate = false;
+    @Override
+    public String update(Appointment request, long id) throws NotFoundException {
 
-        if (patient.getPhone() == null || !patient.getPhone().equals(request.getPhone())) {
-            patient.setPhone(request.getPhone());
-            shouldUpdate = true;
-        }
-        if (patient.getName() == null || !patient.getName().equals(request.getName())) {
-            patient.setName(request.getName());
-            shouldUpdate = true;
-        }
+        helper.validateRequest(request, id);
 
-        if (shouldUpdate) {
-            patientRepository.saveAndFlush(patient);
+        Optional<Appointment> persistedOpt = appointmentsRepository.findById(id);
+        if (persistedOpt.isPresent()) {
+            Appointment persisted = persistedOpt.get();
+            if (!persisted.getDate().equals(request.getDate())) {
+                persisted.setDate(request.getDate());
+            }
+            persisted.setDoctor(request.getDoctor());
+            persisted.setPatient(request.getPatient());
+            persisted.setPrescription(request.getPrescription());
+            persisted.setMedicalHistory(request.getMedicalHistory());
+            if (persisted.getService().getId() != request.getService().getId()) {
+                persisted.setService(serviceRepository.findById(request.getService().getId())
+                                             .orElseThrow(() -> new NotFound("Invalid service provided")));
+            }
+
+            persisted.setStatus(request.getStatus());
+
+            patientRepository.saveAndFlush(request.getPatient());
+            Appointment entity = appointmentsRepository.saveAndFlush(persisted);
+            return CustomMapper.toAppointmentResponse(entity);
+        }
+        return "not_found";
+    }
+
+    @Override
+    public String delete(long id) {
+        Optional<Appointment> byId = appointmentsRepository.findById(id);
+
+        if (byId.isPresent()) {
+            appointmentsRepository.deleteById(id);
+            if (appointmentsRepository.existsById(id)) {
+                throw new OperationUnsuccessful();
+            }
+
+            return CustomMapper.toAppointmentResponse(byId.get());
+        } else {
+            throw new NotFound("No record for " + id);
         }
     }
 
@@ -144,139 +184,5 @@ public class AppointmentServiceImpl implements AppointmentService {
                         ofInstant(ofEpochMilli(request.getTimestamp()), systemDefault()),
                         request.getDoctorId())
                 .isPresent();
-    }
-
-    @Override
-    public String update(Appointment request, long id) throws NotFoundException {
-
-        validateRequest(request, id);
-
-        Optional<Appointment> persistedOpt = appointmentsRepository.findById(id);
-        if (persistedOpt.isPresent()) {
-            Appointment persisted = persistedOpt.get();
-            if (!persisted.getDate().equals(request.getDate())) {
-                persisted.setDate(request.getDate());
-            }
-            persisted.setDoctor(request.getDoctor());
-            persisted.setPatient(request.getPatient());
-            persisted.setPrescription(request.getPrescription());
-            persisted.setMedicalHistory(request.getMedicalHistory());
-            if (persisted.getService().getId() != request.getService().getId()) {
-                persisted.setService(serviceRepository.findById(request.getService().getId())
-                                             .orElseThrow(() -> new NotFound("Invalid service provided")));
-            }
-
-            persisted.setStatus(request.getStatus());
-
-            patientRepository.saveAndFlush(request.getPatient());
-            Appointment entity = appointmentsRepository.saveAndFlush(persisted);
-            return CustomMapper.toAppointmentResponse(entity);
-        }
-        return "not_found";
-    }
-
-    @Override
-    public void delete(long id) {
-
-        if (appointmentsRepository.findById(id).isPresent()) {
-            appointmentsRepository.deleteById(id);
-            if (appointmentsRepository.existsById(id)) {
-                throw new OperationUnsuccessful();
-            }
-        } else {
-            throw new NotFound("No record for " + id);
-        }
-    }
-
-    private List<AppointmentDto> getFiltered(String filter, String userEmail) {
-
-        boolean shouldFilterByUser = Strings.isNotBlank(userEmail);
-        List<AppointmentDto> filteredByUser = new ArrayList<>();
-        if (shouldFilterByUser) {
-            filteredByUser.addAll(this.findByUser(userEmail));
-        }
-
-        if (Strings.isEmpty(filter)) {
-            return filteredByUser;
-        }
-
-        // status:appointment,pending
-        String[] tokens = filter.split(":");
-        switch (tokens[0]) {
-            case "status":
-                return filterByStatus(shouldFilterByUser, filteredByUser, tokens[1]);
-
-            default:
-                return Collections.emptyList();
-        }
-
-    }
-
-    private List<AppointmentDto> getAll() {
-        return mapToDtoList(appointmentsRepository.findAll());
-    }
-
-    private List<AppointmentDto> findByUser(String email) {
-        Optional<Doctor> doctorOpt = doctorsRepository.findByEmail(email);
-        boolean isDoctor = doctorOpt.isPresent();
-
-        Optional<Patient> patientOpt = patientRepository.findByEmail(email);
-        boolean isPatient = patientOpt.isPresent();
-
-        List<Appointment> appointments = new ArrayList<>();
-        if (isDoctor) {
-            appointments.addAll(appointmentsRepository.findAllByDoctorId(doctorOpt.get().getId()));
-        } else if (isPatient) {
-            appointments.addAll(appointmentsRepository.findAllByPatientId(patientOpt.get().getId()));
-        } else {
-            throw new NotFound("No user found");
-        }
-
-        return mapToDtoList(appointments);
-    }
-
-    private List<AppointmentDto> filterByStatus(boolean filterByUser, List<AppointmentDto> byUser, String token) {
-
-        List<AppointmentDto> result = new ArrayList<>();
-        BiPredicate<AppointmentDto, String> filterByStatusPredicate = (appointment, status) ->
-                appointment.getStatus().equalsIgnoreCase(status);
-
-        // appointment,pending
-        String[] statusArray = token.split(",");
-
-        for (String status : statusArray) {
-            if (filterByUser) {
-                result.addAll(
-                        byUser.stream()
-                                .filter(a -> filterByStatusPredicate.test(a, status))
-                                .collect(Collectors.toList())
-                );
-            } else {
-                result.addAll(
-                        mapToDtoList(appointmentsRepository.findAllByStatus(status))
-                );
-            }
-        }
-        return result;
-    }
-
-    private void validateRequest(Appointment request, long id) throws NotFoundException {
-        if (request.getId() != id) {
-            throw new NotFoundException("No record for " + id);
-        }
-
-        doctorsRepository.findById(request.getDoctor().getId())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getDoctor().getId()));
-        serviceRepository.findById(request.getService().getId())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getService().getId()));
-        patientRepository.findByEmail(request.getPatient().getEmail())
-                .orElseThrow(() -> new NotFoundException("No record for " + request.getPatient().getEmail()));
-    }
-
-    private List<AppointmentDto> mapToDtoList(List<Appointment> allByStatus) {
-        return allByStatus
-                .stream()
-                .map((e) -> ObjectMapperUtils.map(e, AppointmentDto.class))
-                .collect(Collectors.toList());
     }
 }

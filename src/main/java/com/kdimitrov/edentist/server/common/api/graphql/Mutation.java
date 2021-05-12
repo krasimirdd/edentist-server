@@ -1,19 +1,24 @@
 package com.kdimitrov.edentist.server.common.api.graphql;
 
-import com.kdimitrov.edentist.server.common.services.DefService;
+import com.kdimitrov.edentist.server.common.services.ApiService;
 import graphql.kickstart.tools.GraphQLMutationResolver;
 import org.springframework.stereotype.Service;
 
 @Service
 public class Mutation implements GraphQLMutationResolver {
-    private final DefService service;
+    private final ApiService service;
 
-    public Mutation(final DefService service) {
+    public Mutation(final ApiService service) {
         this.service = service;
     }
 
-    public boolean createUser(final String email, final String name, final String password, final String phone) {
-        return service.createUser(email, name, password, phone) != null;
+    public boolean createUser(final String email,
+                              final String name,
+                              final String phone,
+                              final String specialization,
+                              final String description,
+                              final String img) {
+        return service.createUser(email, name, phone, specialization, description, img) != null;
     }
 
 }

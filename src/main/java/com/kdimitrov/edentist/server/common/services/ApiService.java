@@ -7,14 +7,19 @@ import com.kdimitrov.edentist.server.common.models.dto.ServiceDto;
 
 import java.util.List;
 
-public interface DefService {
+public interface ApiService {
     List<ServiceDto> findAllServices();
 
     List<DoctorDto> findAllDoctors();
 
-    String findById(String userEmail) throws NotFound;
+    String findUser(String userEmail) throws NotFound;
 
     String save(String email);
 
-    Doctor createUser(String email, String name, String password, String phone);
+    Doctor createUser(String email,
+                      String name,
+                      String phone,
+                      String specialization,
+                      String description,
+                      String img);
 }
