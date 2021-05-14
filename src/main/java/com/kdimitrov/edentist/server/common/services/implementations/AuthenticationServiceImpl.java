@@ -4,18 +4,24 @@ package com.kdimitrov.edentist.server.common.services.implementations;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.kdimitrov.edentist.app.config.ApplicationConfig;
 import com.kdimitrov.edentist.server.common.exceptions.NotFound;
 import com.kdimitrov.edentist.server.common.exceptions.OperationUnsuccessful;
 import com.kdimitrov.edentist.server.common.services.abstractions.AuthenticationService;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+import javax.swing.text.html.Option;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 import static com.kdimitrov.edentist.server.common.utils.Routes.AUTHORIZATION;
@@ -37,18 +43,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .build();
     }
 
-    public String generateJwt() {
+    public <T> String generateJwt(T t) {
+        JSONObject jsonObject = new JSONObject((String) t);
+        String roleClaim = jsonObject.getString("role");
+
         return JWT.create()
                 .withIssuer(ISSUER)
+                .withClaim("role", roleClaim)
                 .sign(algorithm);
     }
 
-    protected void validateToken(String token) throws AuthenticationException {
+    protected void validateToken(String token, Optional<String> claim) throws AuthenticationException {
         try {
             if (StringUtils.isEmpty(token)) {
                 throw new AuthenticationException("Authentication header is missing!");
             }
-            verifier.verify(token);
+
+            DecodedJWT decodedJWT = verifier.verify(token);
+            claim.ifPresent(s -> {
+                Claim roleClaim = decodedJWT.getClaim("role");
+                if (roleClaim.isNull() || !s.equals(roleClaim.asString())) throw new JWTVerificationException("Wrong claims found!");
+            });
         } catch (JWTVerificationException e) {
             throw new AuthenticationException(e.getLocalizedMessage());
         }
@@ -61,9 +76,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public <T> ResponseEntity<T> withToken(Callable<T> callable, String token) {
+    public <T> ResponseEntity<T> withToken(Callable<T> callable, String token, Optional<String> claim) {
         try {
-            validateToken(token);
+            validateToken(token, claim);
             return new ResponseEntity<>(callable.call(), HttpStatus.OK);
         } catch (AuthenticationException e) {
             e.printStackTrace();
@@ -78,15 +93,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public <T> ResponseEntity<T> withSecret(Callable<T> callable, String secret, boolean genJwt) {
+    public <T> ResponseEntity<T> withSecret(Callable<T> callable, String secret, boolean shouldGenJwt) {
         try {
             validateSecret(secret);
-            return genJwt
+
+            T callableResult = callable.call();
+            return shouldGenJwt
                    ? ResponseEntity.ok()
-                           .header(AUTHORIZATION, generateJwt())
-                           .body(callable.call())
+                           .header(AUTHORIZATION, generateJwt(callableResult))
+                           .body(callableResult)
                    : ResponseEntity.ok()
-                           .body(callable.call());
+                           .body(callableResult);
         } catch (AuthenticationException e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

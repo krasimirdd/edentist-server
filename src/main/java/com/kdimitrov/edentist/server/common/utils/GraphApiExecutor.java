@@ -12,16 +12,22 @@ public class GraphApiExecutor {
     private final Logger logger = LogManager.getLogger(GraphApiExecutor.class);
 
     public <T> T execute(Callable<T> callable, Method method) {
+
         try {
+            T result = callable.call();
+
             switch (method) {
                 case CREATE:
-                    T result = callable.call();
                     logger.info("Creating instance {} via the Graph API.", result.toString());
-
-                    return result;
+                case GET:
+                    logger.info("Getting data for entity via the Graph API");
+                case FILTER:
+                    logger.info("Filtering data for entity via the Graph API.");
                 default:
 
             }
+
+            return result;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -29,6 +35,8 @@ public class GraphApiExecutor {
     }
 
     public enum Method {
-        CREATE
+        CREATE,
+        GET,
+        FILTER,
     }
 }

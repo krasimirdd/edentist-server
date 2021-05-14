@@ -1,5 +1,6 @@
 package com.kdimitrov.edentist.server.common.services.implementations;
 
+import com.kdimitrov.edentist.app.config.ApplicationConfig;
 import com.kdimitrov.edentist.server.common.exceptions.NotFound;
 import com.kdimitrov.edentist.server.common.models.Doctor;
 import com.kdimitrov.edentist.server.common.models.Patient;
@@ -12,7 +13,6 @@ import com.kdimitrov.edentist.server.common.services.abstractions.ApiService;
 import com.kdimitrov.edentist.server.common.utils.CustomMapper;
 import com.kdimitrov.edentist.server.common.utils.GraphApiExecutor;
 import com.kdimitrov.edentist.server.common.utils.ObjectMapperUtils;
-import com.kdimitrov.edentist.app.config.ApplicationConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -30,18 +30,15 @@ public class ApiServiceImpl implements ApiService {
     private final ServicesRepository servicesRepository;
     private final DoctorsRepository doctorsRepository;
     private final PatientRepository patientRepository;
-    private final GraphApiExecutor graphExecutor;
 
     public ApiServiceImpl(ApplicationConfig config,
                           ServicesRepository servicesRepository,
                           DoctorsRepository doctorsRepository,
-                          PatientRepository patientRepository,
-                          GraphApiExecutor graphExecutor) {
+                          PatientRepository patientRepository) {
         this.config = config;
         this.servicesRepository = servicesRepository;
         this.doctorsRepository = doctorsRepository;
         this.patientRepository = patientRepository;
-        this.graphExecutor = graphExecutor;
     }
 
     @Override
@@ -91,24 +88,5 @@ public class ApiServiceImpl implements ApiService {
             patient.setEmail(email);
             return CustomMapper.toUserDtoString(patientRepository.saveAndFlush(patient));
         }
-    }
-
-    @Override
-    public Doctor createUser(String email,
-                             String name,
-                             String phone,
-                             String specialization,
-                             String description,
-                             String img) {
-        Doctor doctor = new Doctor();
-
-        doctor.setEmail(email);
-        doctor.setName(name);
-        doctor.setPhone(phone);
-        doctor.setSpecialization(specialization);
-        doctor.setDescription(description);
-        doctor.setImg(img);
-
-        return graphExecutor.execute(() -> doctorsRepository.saveAndFlush(doctor), GraphApiExecutor.Method.CREATE);
     }
 }

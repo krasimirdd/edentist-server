@@ -37,7 +37,6 @@ dependencies {
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.amqp:spring-rabbit-test'
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     implementation group: 'org.modelmapper', name: 'modelmapper', version: '0.7.5'
     implementation group: 'org.json', name: 'json', version: '20210307'
     implementation 'com.github.KwabenBerko:News-API-Java:1.0.0'

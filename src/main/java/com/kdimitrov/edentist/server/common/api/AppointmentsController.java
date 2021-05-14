@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.kdimitrov.edentist.server.common.utils.Routes.APPOINTMENTS;
 import static com.kdimitrov.edentist.server.common.utils.Routes.ARCHIVED;
@@ -60,7 +61,7 @@ public class AppointmentsController {
             @RequestParam(name = USER_PARAM) String userEmail) {
 
         return authenticationService
-                .withToken(() -> appointmentService.filterAppointments(filter, userEmail), auth);
+                .withToken(() -> appointmentService.filterAppointments(filter, userEmail), auth, Optional.empty());
     }
 
 
@@ -72,7 +73,7 @@ public class AppointmentsController {
             @RequestParam(name = USER_PARAM, required = false) String userEmail) {
 
         return authenticationService
-                .withToken(() -> archivedAppointmentService.filterAppointments(filter, userEmail), auth);
+                .withToken(() -> archivedAppointmentService.filterAppointments(filter, userEmail), auth, Optional.empty());
     }
 
     @PostMapping
@@ -94,7 +95,7 @@ public class AppointmentsController {
             @PathVariable(value = ID_PARAM) long id) {
 
         return authenticationService
-                .withToken(() -> appointmentService.updateAppointment(request, id), auth);
+                .withToken(() -> appointmentService.updateAppointment(request, id), auth, Optional.of("doctor"));
     }
 
     @DeleteMapping(BY_ID)
@@ -103,6 +104,6 @@ public class AppointmentsController {
             @PathVariable(value = ID_PARAM) long id) {
 
         return authenticationService
-                .withToken(() -> appointmentService.deleteAppointment(id), auth);
+                .withToken(() -> appointmentService.deleteAppointment(id), auth, Optional.of("patient"));
     }
 }
