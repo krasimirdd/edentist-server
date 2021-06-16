@@ -82,7 +82,7 @@ create table archive_appointment
 );
 
 INSERT INTO edentist.doctor (description, email, img, name, phone, specialization)
-VALUES ('decr', 'doc@mail.bg','../../assets/images/team/t3.jpg', 'Peter Stoyanov', '0895123123', 'Surgery');
+VALUES ('decr', 'doc@mail.bg', '../../assets/images/team/t3.jpg', 'Peter Stoyanov', '0895123123', 'Surgery');
 
 INSERT INTO edentist.service_type (type)
 VALUES ('Orthodontic'),
@@ -93,3 +93,26 @@ INSERT INTO edentist.status (name)
 VALUES ('Approved'),
        ('Declined'),
        ('Pending');
+
+DROP PROCEDURE IF EXISTS `spo_archive_appointments`;
+
+DELIMITER $$
+CREATE PROCEDURE spo_archive_appointments()
+BEGIN
+
+    START TRANSACTION;
+    INSERT INTO archive_appointment
+    SELECT *
+    from appointment
+    WHERE UNIX_TIMESTAMP() > UNIX_TIMESTAMP(date);
+
+    DELETE
+    FROM appointment
+    WHERE UNIX_TIMESTAMP() > UNIX_TIMESTAMP(date);
+    commit;
+END $$
+DELIMITER ;
+
+CREATE EVENT IF NOT EXISTS archive_appointments
+    ON SCHEDULE EVERY 1 DAY
+    DO CALL spo_archive_appointments();

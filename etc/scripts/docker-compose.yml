@@ -22,7 +22,7 @@ services:
   product-server:
     container_name: product-service
     build: ../../product-server/src/main/resources/Dockerfile
-    image: product-service
+    image: kdduni98/product-service
     depends_on:
       - db
       - mq
@@ -33,7 +33,7 @@ services:
   message-server:
     container_name: message-service
     build: ../../message-server/src/main/resources/Dockerfile
-    image: message-service
+    image: kdduni98/message-service
     depends_on:
       - mq
     restart: on-failure
