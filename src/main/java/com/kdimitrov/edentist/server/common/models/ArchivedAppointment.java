@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity(name = "archived_appointment")
-@Table(name = "archive_appointments")
+@Table(name = "archive_appointment")
 public class ArchivedAppointment extends com.kdimitrov.edentist.server.common.models.Entity {
 
 

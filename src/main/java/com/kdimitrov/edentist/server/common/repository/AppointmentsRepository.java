@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AppointmentsRepository<T extends Entity> {
+
     List<T> findAllByStatus(String status);
 
     List<T> findAllByDoctorId(long id);
@@ -15,8 +16,4 @@ public interface AppointmentsRepository<T extends Entity> {
 
     Optional<T> findByDateEqualsAndDoctorId(LocalDateTime dateTime, long doctorId);
 
-//
-//    @Query(value = "SELECT v from VisitEntity v where v.date =:date and v.remedial.email=:remedial")
-//
-//    Optional<Appointment> findAlreadyRequest(LocalDateTime date, String remedial);
 }

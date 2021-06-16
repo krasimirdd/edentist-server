@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.Random;
 
 @Entity(name = "appointment")
-@Table(name = "appointments")
+@Table(name = "appointment")
 public class Appointment extends com.kdimitrov.edentist.server.common.models.Entity {
 
     @Column(name = "visit_code")

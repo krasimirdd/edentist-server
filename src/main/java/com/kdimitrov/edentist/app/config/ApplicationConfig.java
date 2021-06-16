@@ -38,6 +38,10 @@ public class ApplicationConfig {
         return secret.getBytes();
     }
 
+    public String getSecretString() {
+        return secret;
+    }
+
     public void setSecret(String secret) {
         this.secret = secret;
     }
@@ -75,6 +79,7 @@ public class ApplicationConfig {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     @Bean
     public FilterRegistrationBean corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

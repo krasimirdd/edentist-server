@@ -11,6 +11,7 @@ import com.kdimitrov.edentist.app.config.ApplicationConfig;
 import com.kdimitrov.edentist.server.common.exceptions.NotFound;
 import com.kdimitrov.edentist.server.common.exceptions.OperationUnsuccessful;
 import com.kdimitrov.edentist.server.common.services.abstractions.AuthenticationService;
+import com.kdimitrov.edentist.server.common.utils.CryptoUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
-import javax.swing.text.html.Option;
-import java.util.Arrays;
-import java.util.Base64;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
@@ -62,7 +61,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             DecodedJWT decodedJWT = verifier.verify(token);
             claim.ifPresent(s -> {
                 Claim roleClaim = decodedJWT.getClaim("role");
-                if (roleClaim.isNull() || !s.equals(roleClaim.asString())) throw new JWTVerificationException("Wrong claims found!");
+                if (roleClaim.isNull() || !s.equals(roleClaim.asString()))
+                    throw new JWTVerificationException("Wrong claims found!");
             });
         } catch (JWTVerificationException e) {
             throw new AuthenticationException(e.getLocalizedMessage());
@@ -70,7 +70,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     private void validateSecret(String secret) throws AuthenticationException {
-        if (StringUtils.isEmpty(secret) || !Arrays.equals(this.secret, secret.getBytes())) {
+
+        if (StringUtils.isEmpty(secret)) {
+            throw new AuthenticationException("Authentication header is missing!");
+        }
+
+        try {
+            if (!CryptoUtils.getSecretHash().equalsIgnoreCase(secret)) {
+                throw new AuthenticationException("Authentication header error!");
+            }
+        } catch (NoSuchAlgorithmException e) {
             throw new AuthenticationException("Authentication header error!");
         }
     }

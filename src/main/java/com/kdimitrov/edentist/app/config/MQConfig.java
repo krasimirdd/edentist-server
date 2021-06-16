@@ -121,20 +121,4 @@ public class MQConfig {
         return new Jackson2JsonMessageConverter();
     }
 
-//    @Bean
-//    public JavaMailSender mailSender(MailProperties mailProperties) {
-//        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-//
-//        mailSender.setHost(mailProperties.getHost());
-//        mailSender.setPort(mailProperties.getPort());
-//
-//        mailSender.setUsername(mailProperties.getUsername());
-//        mailSender.setPassword(mailProperties.getPassword());
-//
-//        Properties props = mailSender.getJavaMailProperties();
-//        Map<String, String> properties = mailProperties.getProperties();
-//        props.putAll(properties);
-//
-//        return mailSender;
-//    }
 }

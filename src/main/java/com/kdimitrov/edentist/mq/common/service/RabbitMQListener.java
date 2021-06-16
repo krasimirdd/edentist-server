@@ -28,7 +28,7 @@ public class RabbitMQListener implements MessageListener {
 
     private final MailService mailService;
     private final ObjectMapper mapper = new Jackson2ObjectMapperBuilder()
-            .modulesToInstall(new JavaTimeModule(),new Jdk8Module()).build()
+            .modulesToInstall(new JavaTimeModule(), new Jdk8Module()).build()
             .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
@@ -52,7 +52,7 @@ public class RabbitMQListener implements MessageListener {
             logger.info("=== >> Message body << === \n {}", value);
 
             executor.submit(new MQTask(mailService, value));
-            logger.info("Task submitted.");
+            logger.info("Task for {} submitted.", value.getAction());
         } catch (IOException e) {
             e.printStackTrace();
         }

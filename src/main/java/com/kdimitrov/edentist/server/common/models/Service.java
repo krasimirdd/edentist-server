@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity(name = "service_type")
-@Table(name = "service_types")
+@Table(name = "service_type")
 public class Service extends com.kdimitrov.edentist.server.common.models.Entity {
 
     @Column

@@ -5,7 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity(name = "doctor")
-@Table(name = "doctors")
+@Table(name = "doctor")
 public class Doctor extends com.kdimitrov.edentist.server.common.models.Entity {
 
     @Column

@@ -148,7 +148,7 @@ public class PresentAppointmentService extends AppointmentService<Appointment, P
                 .findByDateEqualsAndDoctorId(date, remedial)
                 .isPresent();
         if (isBooked) {
-            getNextAvailableRecursive(date.plusMinutes(30), remedial);
+            date = getNextAvailableRecursive(date.plusMinutes(30), remedial);
         }
 
         return date;

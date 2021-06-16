@@ -31,7 +31,7 @@ public class AppointmentsHelper {
                               ServicesService servicesService) {
 
         this.servicesService = servicesService;
-        this.patientsService= patientsService;
+        this.patientsService = patientsService;
         this.doctorsService = doctorsService;
     }
 
@@ -66,7 +66,7 @@ public class AppointmentsHelper {
 
         // status:appointment,pending
         String[] tokens = filter.split(":");
-        if ("status" .equals(tokens[0])) {
+        if ("status".equals(tokens[0])) {
             return filterByStatus(shouldFilterByUser, filteredByUser, tokens[1], repository);
         }
         return Collections.emptyList();

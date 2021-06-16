@@ -1,6 +1,7 @@
 package com.kdimitrov.edentist.server.common.api;
 
 import com.kdimitrov.edentist.server.common.exceptions.NotFound;
+import com.kdimitrov.edentist.server.common.models.Action;
 import com.kdimitrov.edentist.server.common.models.Appointment;
 import com.kdimitrov.edentist.server.common.models.dto.AppointmentDto;
 import com.kdimitrov.edentist.server.common.models.rest.AppointmentRequest;
@@ -82,7 +83,7 @@ public class AppointmentsController {
             @RequestBody AppointmentRequest request) throws NotFound {
 
         ResponseEntity<String> entity = appointmentService.saveAppointment(request);
-        broker.translate(new JSONObject(entity.getBody()));
+        broker.translate(new JSONObject(entity.getBody()).append("action", Action.ADD_NEW.name()));
         return entity;
 
     }
@@ -95,7 +96,11 @@ public class AppointmentsController {
             @PathVariable(value = ID_PARAM) long id) {
 
         return authenticationService
-                .withToken(() -> appointmentService.updateAppointment(request, id), auth, Optional.of("doctor"));
+                .withToken(() -> {
+                    String entity = appointmentService.updateAppointment(request, id);
+                    broker.translate(new JSONObject(entity).put("action", Action.EDIT.name()));
+                    return entity;
+                }, auth, Optional.of("doctor"));
     }
 
     @DeleteMapping(BY_ID)

@@ -72,8 +72,10 @@ public class NewsfeedServiceImpl implements NewsfeedService {
         return new NewsApiClient.ArticlesResponseCallback() {
             @Override
             public void onSuccess(ArticleResponse response) {
-                for (int i = 0; i < limit; i++) {
-                    articlesList.add(response.getArticles().get(i));
+                for (Article a : response.getArticles()) {
+                    if (articlesList.size() < limit) {
+                        articlesList.add(a);
+                    }
                 }
             }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.kdimitrov.edentist.server.common.models.Action;
 
 import java.io.Serializable;
 
@@ -40,6 +41,9 @@ public class VisitRequest implements Serializable {
 
     @JsonProperty(value = "service")
     private Service service;
+
+    @JsonProperty(value = "action")
+    private String action;
 
     public long getId() {
         return id;
@@ -77,7 +81,24 @@ public class VisitRequest implements Serializable {
         return service;
     }
 
-    public VisitRequest(long id, String visitCode, String date, String status, String medicalHistory, String prescription, User doctor, User patient, Service service) {
+    public Action getAction() {
+        return Action.valueOf(action);
+    }
+
+    public void setAction(String  action) {
+        this.action = action;
+    }
+
+    public VisitRequest(long id,
+                        String visitCode,
+                        String date,
+                        String status,
+                        String medicalHistory,
+                        String prescription,
+                        User doctor,
+                        User patient,
+                        Service service,
+                        String action) {
         this.id = id;
         this.visitCode = visitCode;
         this.date = date;
@@ -87,6 +108,7 @@ public class VisitRequest implements Serializable {
         this.doctor = doctor;
         this.patient = patient;
         this.service = service;
+        this.action = action;
     }
 
     public VisitRequest() {
@@ -104,6 +126,7 @@ public class VisitRequest implements Serializable {
                 ", doctor=" + doctor +
                 ", patient=" + patient +
                 ", service=" + service +
+                ", action=" + action +
                 '}';
     }
 }

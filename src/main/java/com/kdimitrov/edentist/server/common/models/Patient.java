@@ -7,7 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity(name = "patient")
-@Table(name = "patients")
+@Table(name = "patient")
 public class Patient extends com.kdimitrov.edentist.server.common.models.Entity {
 
     @Column
