@@ -1,3 +1,0 @@
-FROM openjdk:8-jdk-alpine
-COPY etc/artifacts/message_server_jar/edentist-server.jar message-server-1.0.0.jar
-CMD ["java","-jar","/message-server-1.0.0.jar", "-Dserver.port=9002"]

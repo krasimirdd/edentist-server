@@ -1,1 +1,2 @@
 rootProject.name = 'edentist-server'
+include("product-server", "message-server")

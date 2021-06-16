@@ -1,0 +1,23 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  rabbitmq:
+    host: 192.168.0.169
+    port: 5672
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: edentist18@gmail.com
+    password: fmetudivmccsnihz
+    properties:
+      mail.smtp:
+        auth: true
+        starttls.enable: true
+edentist:
+  mq:
+    exchange: edentist.exchange
+    routingkey: edentist.routingkey
+    username: guest
+    password: guest
+    queue-name: edentist.queue
+    mailSender: edentist18@gmail.com

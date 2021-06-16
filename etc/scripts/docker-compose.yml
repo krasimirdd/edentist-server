@@ -1,37 +1,41 @@
-version: '2'
+version: '3.3'
 services:
   db:
-    image: 'mysql:5.7'
-    restart: 'always'
-    expose:
-      - '3306'
+    build: mysql
+    image: 'database'
     ports:
       - '3306:3306'
+    expose:
+      - '3306'
     environment:
       MYSQL_ROOT_PASSWORD: 'pass'
       MYSQL_DATABASE: 'edentist'
       MYSQL_USER: 'user'
       MYSQL_PASSWORD: 'pass'
+
   mq:
     image: 'rabbitmq:latest'
-    restart: 'always'
-    expose:
-      - '5672'
-      - '15672'
     ports:
       - '5672:5672'
       - '15672:15672'
 
   product-server:
-    container_name: product-server
-    image: openjdk:8
-    restart: always
+    container_name: product-service
+    build: ../../product-server/src/main/resources/Dockerfile
+    image: product-service
+    depends_on:
+      - db
+      - mq
+    restart: on-failure
     ports:
       - 8080:8080
-    command: ['java','-jar','etc/artifacts/product_server_jar/edentist-server.jar', '-Djava.util.logging.config.file="C:\Users\kdimitrov\Work\GitRepository\edentist-server\src\main\resources\logging.properties"']
+
   message-server:
-    container_name: message-server
-    image: openjdk:8
+    container_name: message-service
+    build: ../../message-server/src/main/resources/Dockerfile
+    image: message-service
+    depends_on:
+      - mq
+    restart: on-failure
     ports:
       - 9002:9002
-    command: ['java','-jar','etc/artifacts/message_server_jar/edentist-server.jar','-Dserver.port=9002', '-Djava.util.logging.config.file="C:\Users\kdimitrov\Work\GitRepository\edentist-server\src\main\resources\logging.properties"']
