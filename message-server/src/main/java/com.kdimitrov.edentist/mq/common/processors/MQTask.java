@@ -8,8 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 
 public class MQTask implements Runnable {
     private static final String ERROR_MSG_DOCTOR = "Error when sending mail to the doctor";
@@ -30,15 +29,15 @@ public class MQTask implements Runnable {
 
         switch (visitRequest.getAction()) {
             case ADD_NEW:
-                sendMailTo(Paths.get("src/main/resources/email-templates/email_doctor.html"),
+                sendMailTo(getFileFromResourceAsStream("email-templates/email_doctor.html"),
                            visitRequest.getDoctor(),
                            ERROR_MSG_DOCTOR);
-                sendMailTo(Paths.get("src/main/resources/email-templates/email_patient.html"),
+                sendMailTo(getFileFromResourceAsStream("email-templates/email_patient.html"),
                            visitRequest.getPatient(),
                            ERROR_MSG_PATIENT);
                 break;
             case EDIT:
-                sendMailTo(Paths.get("src/main/resources/email-templates/email_patient_edit.html"),
+                sendMailTo(getFileFromResourceAsStream("email-templates/email_patient_edit.html"),
                            visitRequest.getPatient(),
                            ERROR_MSG_PATIENT);
                 break;
@@ -47,7 +46,8 @@ public class MQTask implements Runnable {
         }
     }
 
-    private void sendMailTo(Path path, User user, String errorMsg) {
+    private void sendMailTo(InputStream path, User user, String errorMsg) {
+
         try {
             mailService.sendEmail(SUBJECT,
                                   path,
@@ -56,5 +56,23 @@ public class MQTask implements Runnable {
         } catch (IOException | MessagingException e) {
             logger.info(errorMsg, e);
         }
+    }
+
+    // get a file from the resources folder
+    // works everywhere, IDEA, unit test and JAR file.
+    private InputStream getFileFromResourceAsStream(String fileName) {
+
+        // The class loader that loaded the class
+        ClassLoader classLoader = this.getClass().getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream(fileName);
+
+        // the stream holding the file content
+        if (inputStream == null) {
+            logger.info("file not found");
+            throw new IllegalArgumentException("file not found! " + fileName);
+        } else {
+            return inputStream;
+        }
+
     }
 }

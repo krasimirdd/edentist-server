@@ -2,7 +2,6 @@ package com.kdimitrov.edentist.mq.common.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -11,8 +10,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Service
 public class MailServiceImpl implements MailService {
@@ -41,7 +40,7 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void sendEmail(String subject, Path file, String to, @NotNull String code) throws IOException, MessagingException {
+    public void sendEmail(String subject, InputStream file, String to, @NotNull String code) throws IOException, MessagingException {
         logger.info("Sending mail.");
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -50,7 +49,10 @@ public class MailServiceImpl implements MailService {
         if (code == null) {
             throw new IOException("Code must not be null!");
         }
-        String text = new String(Files.readAllBytes(file)).replaceAll("@code@", code);
+
+        byte[] fileContent = new byte[file.available()];
+        file.read(fileContent);
+        String text = new String(fileContent).replaceAll("@code@", code);
         helper.setFrom(sender);
         helper.setTo(to);
         helper.setSubject(subject);

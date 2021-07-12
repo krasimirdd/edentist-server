@@ -83,7 +83,7 @@ public class AppointmentsController {
             @RequestBody AppointmentRequest request) throws NotFound {
 
         ResponseEntity<String> entity = appointmentService.saveAppointment(request);
-        broker.translate(new JSONObject(entity.getBody()).append("action", Action.ADD_NEW.name()));
+        broker.translate(new JSONObject(entity.getBody()).put("action", Action.ADD_NEW.name()));
         return entity;
 
     }

@@ -2,7 +2,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:mysql://192.168.0.169:3306/edentist?createDatabaseIfNotExist=true
+    url: jdbc:mysql://localhost:3306/edentist?createDatabaseIfNotExist=true
     driverClassName: com.mysql.cj.jdbc.Driver
     username: root
     password: pass
@@ -31,6 +31,6 @@ edentist:
     secret: edentistmegasecretapplicaitonkey123456789
     superadminEmail: edentist18@gmail.com
     newsapiclient:
-      token: 7c18617c8c3d4d32bae73e8970677dd8
+      token: 5b825622a50744249be6b8b3197a8337
       limit: 15
       timeout: 1500

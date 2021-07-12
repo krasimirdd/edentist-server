@@ -1,6 +1,7 @@
 version: '3.3'
 services:
   db:
+    container_name: 'db'
     build: mysql
     image: 'database'
     ports:
@@ -14,26 +15,27 @@ services:
       MYSQL_PASSWORD: 'pass'
 
   mq:
+    container_name: 'mq'
     image: 'rabbitmq:latest'
     ports:
       - '5672:5672'
       - '15672:15672'
 
-  product-server:
-    container_name: product-service
-    build: ../../product-server/src/main/resources/Dockerfile
-    image: kdduni98/product-service
-    depends_on:
-      - db
-      - mq
-    restart: on-failure
-    ports:
-      - 8080:8080
+#  product-server:
+#    container_name: 'product-server'
+#    build: ../../product-server/src/main/resources
+#    image: kdduni98/product-server
+#    depends_on:
+#      - db
+#      - mq
+#    restart: on-failure
+#    ports:
+#      - 8080:8080
 
   message-server:
-    container_name: message-service
-    build: ../../message-server/src/main/resources/Dockerfile
-    image: kdduni98/message-service
+    container_name: 'message-server'
+    build: ../../message-server/src/main/resources
+    image: kdduni98/message-server
     depends_on:
       - mq
     restart: on-failure

@@ -2,7 +2,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   rabbitmq:
-    host: 192.168.0.169
+    host: mq
     port: 5672
   mail:
     host: smtp.gmail.com
@@ -21,3 +21,5 @@ edentist:
     password: guest
     queue-name: edentist.queue
     mailSender: edentist18@gmail.com
+server:
+  port: 9002
